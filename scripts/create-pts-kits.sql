@@ -1,0 +1,14 @@
+CREATE TABLE IF NOT EXISTS pts_kits (
+  id SERIAL PRIMARY KEY,
+  code VARCHAR(20) UNIQUE NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO pts_kits (code) VALUES
+('PTS-001A'), ('PTS-001B'), ('PTS-002A'), ('PTS-002B'),
+('PTS-3'), ('PTS-4'), ('PTS-12'), ('PTS-13'), ('PTS-14'),
+('PTS-910-2'), ('PTS-910-7'),
+('PTS-920-2'), ('PTS-920-3'), ('PTS-920-4'), ('PTS-920-5'), ('PTS-920-6'), ('PTS-920-7A'), ('PTS-920-7B'), ('PTS-920-8'), ('PTS-920-9'), ('PTS-920-15'),
+('PTS-930-2'), ('PTS-930-3'), ('PTS-930-4'), ('PTS-930-5'), ('PTS-930-6'), ('PTS-930-7A'), ('PTS-930-7B'), ('PTS-930-8'), ('PTS-930-9'), ('PTS-930-14A'), ('PTS-930-14B'), ('PTS-930-15'), ('PTS-930-16A'), ('PTS-930-16B'), ('PTS-930-17A'), ('PTS-930-17B'), ('PTS-930-18'), ('PTS-930-19A'), ('PTS-930-19B'), ('PTS-930-20'), ('PTS-930-21'), ('PTS-930-22'), ('PTS-930-23'),
+('PTS-940-2'), ('PTS-940-3'), ('PTS-940-4'), ('PTS-940-5'), ('PTS-940-6'), ('PTS-940-7'), ('PTS-940-8'), ('PTS-940-9'), ('PTS-940-11A'), ('PTS-940-11B'), ('PTS-940-12A'), ('PTS-940-12B'), ('PTS-940-13A'), ('PTS-940-13B'), ('PTS-940-14A'), ('PTS-940-14B'), ('PTS-940-15A')
+ON CONFLICT (code) DO NOTHING;

@@ -1,0 +1,62 @@
+PTS,code,PTS Series,Series Description,description,sign_1,sign_2,sign_3,sign_4,sign_5,sign_6,sign_7,sign_8,sign_9,sign_10,sign_11,sign_12,sign_13,sign_14,sign_15,sign_16,sign_17,sign_count_1,sign_count_2,sign_count_3,sign_count_4,sign_count_5,sign_count_6,sign_count_7,sign_count_8,sign_count_9,sign_count_10,sign_count_11,sign_count_12,sign_count_13,sign_count_14,sign_count_15,sign_count_16,sign_count_17,blights
+PTS,001A,PTS 000,General Standards,Milled or Binder Pavement Differential in Right Lane,R2-1,G20-2,W8-11,G20-5AP,W3-5,,,,,,,,,,,,,5,1,4,2,1,,,,,,,,,,,,,
+PTS,001B,PTS 000,General Standards,Milled or Binder Pavement Differential in Left Lane,R2-1,G20-2,W8-11,G20-5AP,W3-5,,,,,,,,,,,,,5,1,4,2,1,,,,,,,,,,,,,
+PTS,002A,PTS 000,General Standards,Milled or Binder Pavement Differential in Right and Center Lanes,R2-1,G20-2,W8-11,G20-5AP,W3-5,,,,,,,,,,,,,5,1,4,2,1,,,,,,,,,,,,,
+PTS,002B,PTS 000,General Standards,Milled or Binder Pavement Differential in Left and Center Lanes,R2-1,G20-2,W8-11,G20-5AP,W3-5,,,,,,,,,,,,,5,1,4,2,1,,,,,,,,,,,,,
+PTS,3,PTS 000,General Standards,Pavement Differential on Right Shoulder,G20-2,W8-9,,,,,,,,,,,,,,,,1,4,,,,,,,,,,,,,,,,
+PTS,4,PTS 000,General Standards,Pavement Differential in Median Shoulder,G20-2,MPT-38,,,,,,,,,,,,,,,,1,3,,,,,,,,,,,,,,,,
+PTS,12,PTS 000,General Standards,WZSSC Stationary Shoulder Closure with Channelizing Devices,R2-1,R23-101,,,,,,,,,,,,,,,,1,2,,,,,,,,,,,,,,,,
+PTS,13,PTS 000,General Standards,WZSSC Lane Closure with Channelizing Devices,R2-1,R23-101,,,,,,,,,,,,,,,,1,2,,,,,,,,,,,,,,,,
+PTS,14,PTS 000,General Standards,WZSSC Stationary Shoulder Closure with Temporary Barrier,R2-1,R23-101,,,,,,,,,,,,,,,,1,2,,,,,,,,,,,,,,,,
+PTS,910-2,PTS 910,Standards for Mobile Operations,Mobile Shoulder Operations,MPT-34,,,,,,,,,,,,,,,,,1,,,,,,,,,,,,,,,,,
+PTS,910-7,PTS 910,Standards for Mobile Operations,Mowing / Litter Cleanup Operations,MPT-34,,,,,,,,,,,,,,,,,1,,,,,,,,,,,,,,,,,
+PTS,920-2,PTS 920,Standards for Short-Term Operations,Stationary Shoulder Closure with Channelizing Devices,G20-2,R2-1,R22-1,W3-5,W20-1,W30-1-6,W21-19,W21-5BR,W21-5BL,W30-1-2,W21-19,,,,,,,1,1,1,1,1,0,1,1,0,0,1,,,,,,,
+PTS,920-3,PTS 920,Standards for Short-Term Operations,Single Lane Closure with Channelizing Devices,G20-2,R2-1,R22-1,W3-5,W21-19,W4-2R,W4-2L,W20-5R,W20-5L,W30-1,,,,,,,,1,4,1,1,1,1,,1,,1,,,,,,,,
+PTS,920-4,PTS 920,Standards for Short-Term Operations,Dual Lane Closure with Channelizing Devices,G20-2,R2-1,R22-1,W3-5,W4-2R,W4-2L,W21-19,W20-5AR,W20-5AL,W30-1,,,,,,,,1,4,1,1,1,,1,1,,1,,,,,,,,
+PTS,920-5,PTS 920,Standards for Short-Term Operations,Right Lane Closure within Transition from 2 to 3 Lanes,G20-2,R2-1,R22-1,W3-5,W20-1,W30-1-6,W21-5BR,W30-1-2,W21-19,,,,,,,,,1,3,1,1,1,1,1,0,1,,,,,,,,,
+PTS,920-6,PTS 920,Standards for Short-Term Operations,Center / Right Lane Closure within Transition from 2 to 3 Lanes,G20-2,R2-1,R22-1,W3-5,W4-2R,W21-19,W20-5R,W30-1,,,,,,,,,,1,4,1,1,1,1,1,1,,,,,,,,,,
+PTS,920-7A,PTS 920,Standards for Short-Term Operations,Lane Closure Traffic Pattern for Interchange and Service Plaza Areas with,R1-2,R2-1,MPT-06,MPT-08,W21-19,R22-1,W3-2,W20-1,W30-1-6,,,,,,,,,2,2,1,1,2,2,2,2,0,,,,,,,,,
+PTS,920-7B,PTS 920,Standards for Short-Term Operations,Lane Closure Traffic Pattern for Interchange and Service Plaza Areas with,R1-2,R2-1,MPT-06,MPT-08,W21-19,R22-1,W3-2,W20-1,W30-1-6,,,,,,,,,1,2,1,1,2,2,1,2,0,,,,,,,,,
+PTS,920-8,PTS 920,Standards for Short-Term Operations,Multiple Single Lane Closure Traffic Patterns,G20-2,R2-1,W4-2R,W4-2L,W20-5R,W20-5L,W20-5AR,W20-5AL,W30-1-4,W30-1,W21-19,W21-20,,,,,,1,2,1,0,1,,,,,,1,1,,,,,,
+PTS,920-9,PTS 920,Standards for Short-Term Operations,Multiple Dual Lane Closure Traffic Patterns,G20-2,R2-1,W4-2R,W4-2L,W20-5R,W20-5AR,W21-19,W21-20,W20-5L,W20-5AL,W30-1-4,W30-1,,,,,,1,4,2,,,2,1,,,,,,,,,,,
+PTS,920-15,PTS 920,Standards for Short-Term Operations,Utility Work Along Shoulder,G20-2,W21-7,,,,,,,,,,,,,,,,1,1,,,,,,,,,,,,,,,,
+PTS,930-2,PTS 930,Standards for Long-Term Operations,Stationary Shoulder Closure with Channelizing Devices,G20-2,G20-5AP,R2-1,R22-1,W3-5,W20-1,W30-1-6,W21-5BR,W21-19,W21-5BL,W30-1-2,,,,,,,1,1,2,1,1,1,1,1,1,1,,,,,,,,1
+PTS,930-3,PTS 930,Standards for Long-Term Operations,Single Lane Closure with Channelizing Devices,G20-2,G20-5AP,R2-1,R22-1,W3-5,W4-2R,W4-2L,W16-103P,W21-19,W20-5R,W20-5L,W30-1,,,,,,1,1,4,1,1,1,,1,1,1,,1,,,,,,1
+PTS,930-4,PTS 930,Standards for Long-Term Operations,Dual Lane Closure with Channelizing Devices,G20-2,G20-5AP,R2-1,R22-1,W3-5,W4-2R,W4-2L,W16-103P,W20-5AR,W21-19,W20-5AL,W30-1,,,,,,1,1,4,1,1,1,,1,1,1,,1,,,,,,1
+PTS,930-5,PTS 930,Standards for Long-Term Operations,Right Lane Closure within Transition from 2 to 3 Lanes,G20-2,G20-5AP,R2-1,R22-1,W3-5,W20-1,W30-1-6,W21-5BR,W30-1-2,W21-19,,,,,,,,1,1,4,1,1,1,1,1,1,1,,,,,,,,1
+PTS,930-6,PTS 930,Standards for Long-Term Operations,Center / Right Lane Closure within Transition from 2 to 3 Lanes,G20-2,G20-5AP,R2-1,R22-1,W3-5,W4-2R,W16-103P,W21-19,W20-5R,W30-1,,,,,,,,1,2,5,1,1,1,1,1,2,2,,,,,,,,1
+PTS,930-7A,PTS 930,Standards for Long-Term Operations,Lane Closure Traffic Pattern for Interchange and Service Plaza Areas with,R1-2,G20-5AP,R2-1,R4-1A,MPT-06,MPT-08,R1-1-2,R1-1,R1-1-3,W21-19,R22-1,W3-1,W3-2,W20-1,W30-1-6,,,2,2,2,2,1,,,,,2,2,,2,2,2,,,2
+PTS,930-7B,PTS 930,Standards for Long-Term Operations,Lane Closure Traffic Pattern for Interchange and Service Plaza Areas with,R1-2,G20-5AP,R2-1,R4-1A,MPT-06,MPT-08,R1-1-2,R1-1,R1-1-3,W21-19,R22-1,W3-1,W3-2,W20-1,W30-1-6,,,1,2,2,2,1,,1,1,,2,2,1,1,2,2,,,3
+PTS,930-8,PTS 930,Standards for Long-Term Operations,Multiple Single Lane Closure Traffic Patterns,G20-2,G20-5AP,R2-1,W4-2R,W20-5R,W20-5AR,W21-19,W4-2L,W20-5L,W16-103P,W30-1-4,W20-5AL,W30-1,W21-20,,,,1,4,4,1,1,,1,,,1,1,,1,1,,,,1
+PTS,930-9,PTS 930,Standards for Long-Term Operations,Multiple Dual Lane Closure Traffic Patterns,G20-2,G20-5AP,R2-1,W21-19,W4-2R,W4-2L,W16-103P,W21-20,W20-5R,W20-5L,W30-1-4,W20-5AR,W20-5AL,W30-1,,,,1,4,4,1,2,,2,1,,,,1,,1,,,,1
+PTS,930-14A,PTS 930,Standards for Long-Term Operations,Stationary Shoulder Closure with Temporary Barrier,G20-2,G20-5AP,R2-1,MPT-31,R22-1,W3-5,W20-1,W30-1-6,W21-5BR,W21-5BL,W30-1-2,,,,,,,1,3,3,1,1,1,1,1,1,,1,,,,,,,
+PTS,930-14B,PTS 930,Standards for Long-Term Operations,Multiple Stationary Shoulder Closures with Temporary Barrier,G20-2,G20-5AP,R2-1,MPT-31,R22-1,W3-5,W20-1,W30-1-6,W21-5BR,W21-5BL,W30-1-2,,,,,,,1,,1,,,,,,,,,,,,,,,
+PTS,930-15,PTS 930,Standards for Long-Term Operations,Single Lane Closure with Temporary Barrier,G20-2,G20-5AP,R2-1,W3-5,R22-1,W4-2R,W4-2L,W16-103P,W21-19,W20-5R,W20-5L,W30-1,,,,,,1,5,5,1,1,1,,1,1,2,,2,,,,,,1
+PTS,930-16A,PTS 930,Standards for Long-Term Operations,Lanes Shift Detail – 2 Lanes Shift – Left,G20-2,G20-5AP,R2-1,MPT-31,R22-1,W3-5,W1-4BL,W1-4BR,W16-103P,W20-1,W24-1AL,W24-1AR,W30-1,,,,,1,5,5,1,1,1,1,1,1,1,,,1,,,,,
+PTS,930-16B,PTS 930,Standards for Long-Term Operations,Lanes Shift Detail – 2 Lanes Shift – Right,G20-2,G20-5AP,R2-1,MPT-31,R22-1,W3-5,W1-4BL,W1-4BR,W16-103P,W20-1,W24-1AL,W24-1AR,W30-1,,,,,1,5,5,1,1,1,1,1,1,1,,,1,,,,,
+PTS,930-17A,PTS 930,Standards for Long-Term Operations,Lanes Shift Detail – 3 Lanes Shift – Left,G20-2,G20-5AP,R2-1,MPT-31,R22-1,W3-5,W1-4CL,W1-4CR,W16-103P,W20-1,W24-1BL,W24-1BR,W30-1,,,,,1,5,5,1,1,1,1,1,2,1,,,1,,,,,
+PTS,930-17B,PTS 930,Standards for Long-Term Operations,Lanes Shift Detail – 3 Lanes Shift – Right,G20-2,G20-5AP,R2-1,MPT-31,R22-1,W3-5,W1-4CL,W1-4CR,W16-103P,W20-1,W24-1BL,W24-1BR,W30-1,,,,,1,5,5,1,1,1,1,1,2,1,,,1,,,,,
+PTS,930-18,PTS 930,Standards for Long-Term Operations,Crossover Traffic Pattern,G20-2,G20-5AP,R2-1,W3-5,MPT-03,MPT-31,R11-2,R22-1,W1-4R,W1-4L,W4-2R,W4-2L,W16-103P,W20-5R,W21-19,W20-5L,W30-1,1,6,6,1,1,1,1,1,1,,1,,1,2,1,,2,
+PTS,930-19A,PTS 930,Standards for Long-Term Operations,Emergency Pull-Off – Type I in Temporary Barrier,D12-14A,G30-1,G30-2,W30-1-3,,,,,,,,,,,,,,1,1,1,1,,,,,,,,,,,,,,
+PTS,930-19B,PTS 930,Standards for Long-Term Operations,Emergency Pull-Off – Type III,D12-14A,G30-1,G30-2,W30-1-3,,,,,,,,,,,,,,1,1,1,1,,,,,,,,,,,,,,
+PTS,930-20,PTS 930,Standards for Long-Term Operations,Opening in Temporary Barrier for Access to Construction Area,G20-5AP,R2-1,W3-5,W21-19,W21-20,W25-5,,,,,,,,,,,,1,1,1,1,1,1,,,,,,,,,,,,1
+PTS,930-21,PTS 930,Standards for Long-Term Operations,Combined Emergency Pull-Off – Type I and Opening in Temporary Barrier for,D12-14A,G20-5AP,R2-1,G30-1,G30-2,W21-19,W21-20,W25-5,,,,,,,,,,1,1,1,1,1,1,1,1,,,,,,,,,,1
+PTS,930-22,PTS 930,Standards for Long-Term Operations,Access to Construction Area without Barrier,G20-2,W25-5,,,,,,,,,,,,,,,,1,1,,,,,,,,,,,,,,,,
+PTS,930-23,PTS 930,Standards for Long-Term Operations,Opening in Temporary Barrier with Truck Crossing,G20-5AP,R2-1,W3-5,W21-19,W21-20,MPT-36,,,,,,,,,,,,1,1,1,1,1,1,,,,,,,,,,,,1
+PTS,940-2,PTS 940,Standards for Interchange Operations,Toll Plaza Right Lane Closure Operations Less Than 8 Hours,PTC-LC,,,,,,,,,,,,,,,,,2,,,,,,,,,,,,,,,,,
+PTS,940-3,PTS 940,Standards for Interchange Operations,Toll Plaza Right Lane Closure Operations Between 8 and 72 Hours,G20-2,PTC-LC,PTC-LCA,,,,,,,,,,,,,,,2,2,3,,,,,,,,,,,,,,,
+PTS,940-4,PTS 940,Standards for Interchange Operations,Toll Plaza Right Lane Closure Operations More Than 72 Hours,G20-2,MPT-10,PTC-LCA,,,,,,,,,,,,,,,2,3,3,,,,,,,,,,,,,,,
+PTS,940-5,PTS 940,Standards for Interchange Operations,Toll Plaza Center Lane Closure Operations Less Than 8 Hours,PTC-LC,,,,,,,,,,,,,,,,,2,,,,,,,,,,,,,,,,,
+PTS,940-6,PTS 940,Standards for Interchange Operations,Toll Plaza Center Lane Closure Operations Between 8 and 72 Hours,G20-2,PTC-LC,PTC-LCA,,,,,,,,,,,,,,,2,2,3,,,,,,,,,,,,,,,
+PTS,940-7,PTS 940,Standards for Interchange Operations,Toll Plaza Center Lane Closure Operations More Than 72 Hours,G20-2,MPT-10,PTC-LCA,,,,,,,,,,,,,,,2,3,3,,,,,,,,,,,,,,,
+PTS,940-8,PTS 940,Standards for Interchange Operations,Advance Warning Signs for Work on Ramps,G20-2,W3-4,W20-7,W21-101,,,,,,,,,,,,,,3,2,2,3,,,,,,,,,,,,,,
+PTS,940-9,PTS 940,Standards for Interchange Operations,Service Plaza Area Construction,G20-2,W21-102,,,,,,,,,,,,,,,,1,1,,,,,,,,,,,,,,,,
+PTS,940-11A,PTS 940,Standards for Interchange Operations,Stationary Shoulder Closure on Ramp with Channelizing Devices,G20-2,W21-101,W21-5BR,W21-19,W30-1-6,,,,,,,,,,,,,1,1,1,1,1,,,,,,,,,,,,,1
+PTS,940-11B,PTS 940,Standards for Interchange Operations,Lane Narrows on Ramp with Channelizing Devices,G20-2,W5-4,W21-101,W21-19,,,,,,,,,,,,,,1,1,1,1,,,,,,,,,,,,,,1
+PTS,940-12A,PTS 940,Standards for Interchange Operations,Stationary Shoulder Closure on Ramp with Temporary Barrier,G20-2,W21-101,W21-5BR,,,,,,,,,,,,,,,1,1,1,,,,,,,,,,,,,,,
+PTS,940-12B,PTS 940,Standards for Interchange Operations,Lane Narrows on Ramp with Temporary Barrier,G20-2,W21-101,W5-4,,,,,,,,,,,,,,,1,1,1,,,,,,,,,,,,,,,
+PTS,940-13A,PTS 940,Standards for Interchange Operations,Single Lane Closure with Channelizing Devices for Dual Lane Ramp,G20-2,W4-2L,W4-2R,W21-101,W21-19,,,,,,,,,,,,,1,1,,1,1,,,,,,,,,,,,,1
+PTS,940-13B,PTS 940,Standards for Interchange Operations,Single Lane Closure with Temporary Barrier for Dual Lane Ramp,G20-2,W4-2L,W4-2R,W21-101,W21-19,,,,,,,,,,,,,1,1,,1,1,,,,,,,,,,,,,1
+PTS,940-14A,PTS 940,Standards for Interchange Operations,Slip Ramp – Lane Addition Closure with Channelizing Devices,G20-2,W4-2L,W4-2R,W21-101,W21-19,,,,,,,,,,,,,1,,,1,1,,,,,,,,,,,,,1
+PTS,940-14B,PTS 940,Standards for Interchange Operations,Slip Ramp – Lane Closure with Channelizing Devices,G20-2,W4-2L,W4-2R,W21-101,W21-19,,,,,,,,,,,,,1,1,,1,1,,,,,,,,,,,,,1
+PTS,940-15A,PTS 940,Standards for Interchange Operations,Traffic Line Painting Operation for Single Lane Interchange Ramps,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
