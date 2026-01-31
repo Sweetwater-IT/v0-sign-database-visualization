@@ -876,7 +876,10 @@ export default function SignKitManager() {
 
               {/* Table Rows */}
               <div className="divide-y divide-border">
-                {pataKitOptions.map((kit) => (
+                {pataKitOptions.map((kit) => {
+                  const hasVariants = pataKitVariants[kit.id?.toString()] && pataKitVariants[kit.id.toString()].length > 0;
+                  
+                  return (
                   <div key={kit.id}>
                     {/* Kit Row */}
                     <div 
@@ -893,7 +896,7 @@ export default function SignKitManager() {
                         >
                           <polyline points="9 18 15 12 9 6" />
                         </svg>
-                        <span className="text-sm font-semibold text-primary cursor-pointer" onClick={() => setExpandedPataKit(expandedPataKit === kit.code ? null : kit.code)}>{kit.code}</span>
+                        <span className="text-sm font-semibold text-primary cursor-pointer">{kit.code}</span>
                       </div>
                       <div className="col-span-9 flex items-center">
                         <span className="text-sm text-foreground">{kit.description || 'No description available'}</span>
@@ -907,8 +910,135 @@ export default function SignKitManager() {
                       </div>
                     </div>
 
-                    {/* Expanded Content */}
-                    {expandedPataKit === kit.code && (
+                    {/* Expanded Content - Show Variants or Signs */}
+                    {expandedPataKit === kit.code && hasVariants && (
+                      <div className="bg-muted/5 px-8 py-2 border-t border-border">
+                        {pataKitVariants[kit.id.toString()].map((variant) => (
+                          <div key={variant.id} className="my-2">
+                            {/* Variant Row */}
+                            <div 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setExpandedPataVariant(expandedPataVariant === `${kit.code}-${variant.variant_label}` ? null : `${kit.code}-${variant.variant_label}`);
+                              }}
+                              className="grid grid-cols-12 gap-0 px-4 py-3 bg-card border border-border rounded-lg hover:bg-muted/30 transition-colors cursor-pointer"
+                            >
+                              <div className="col-span-2 flex items-center">
+                                <svg 
+                                  className={`w-4 h-4 text-primary transition-transform duration-200 mr-2 ${expandedPataVariant === `${kit.code}-${variant.variant_label}` ? 'rotate-90' : ''}`}
+                                  fill="none" 
+                                  stroke="currentColor" 
+                                  strokeWidth="2"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <polyline points="9 18 15 12 9 6" />
+                                </svg>
+                                <span className="text-sm font-semibold text-primary">Option {variant.variant_label}</span>
+                              </div>
+                              <div className="col-span-9 flex items-center">
+                                <span className="text-sm text-muted-foreground">{variant.description}</span>
+                              </div>
+                              <div className="col-span-1 flex items-center justify-center">
+                                {variant.finished ? (
+                                  <CheckCircle2 className="w-5 h-5 text-green-600" />
+                                ) : (
+                                  <div className="w-5 h-5 border-2 border-muted-foreground rounded-full" />
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Variant Expanded Content - Signs for this variant */}
+                            {expandedPataVariant === `${kit.code}-${variant.variant_label}` && (
+                              <div className="bg-muted/10 px-4 py-4 mt-2 border border-border rounded-lg space-y-6">
+                                {/* Blights Section */}
+                                <div className="flex items-end gap-3">
+                                  <div className="w-48">
+                                    <label className="text-sm font-semibold text-foreground block mb-2">Number of Blights</label>
+                                    <QuantityInput
+                                      value={variant.blights || 0}
+                                      onChange={async (newValue) => {
+                                        try {
+                                          const { error } = await supabase
+                                            .from('kit_variants')
+                                            .update({ blights: newValue })
+                                            .eq('id', variant.id);
+                                          
+                                          if (error) throw error;
+                                          
+                                          // Update local state
+                                          setPataKitVariants(prev => ({
+                                            ...prev,
+                                            [kit.id.toString()]: prev[kit.id.toString()].map(v => 
+                                              v.id === variant.id ? {...v, blights: newValue} : v
+                                            )
+                                          }));
+                                        } catch (error) {
+                                          console.error('[v0] Error updating blights:', error);
+                                        }
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+
+                                {/* Signs Section */}
+                                <div className="flex items-center justify-between">
+                                  <p className="text-sm font-semibold text-foreground">Signs and quantities</p>
+                                  <div className="flex items-center gap-2">
+                                    {!variant.finished && (
+                                      <Button
+                                        size="sm"
+                                        onClick={async (e) => {
+                                          e.stopPropagation();
+                                          try {
+                                            const { error } = await supabase
+                                              .from('kit_variants')
+                                              .update({ finished: true })
+                                              .eq('id', variant.id);
+                                            
+                                            if (error) throw error;
+                                            
+                                            setPataKitVariants(prev => ({
+                                              ...prev,
+                                              [kit.id.toString()]: prev[kit.id.toString()].map(v => 
+                                                v.id === variant.id ? {...v, finished: true} : v
+                                              )
+                                            }));
+                                          } catch (error) {
+                                            console.error('[v0] Error marking variant as finished:', error);
+                                          }
+                                        }}
+                                        variant="default"
+                                        className="gap-1"
+                                      >
+                                        <CheckCircle2 className="w-3 h-3" />
+                                        Mark as Finished
+                                      </Button>
+                                    )}
+                                    <Button
+                                      size="sm"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        router.push(`/add-signs?type=PATA&kitCode=${kit.code}&variant=${variant.variant_label}`);
+                                      }}
+                                      className="gap-1"
+                                    >
+                                      <Plus className="w-3 h-3" />
+                                      Add Sign
+                                    </Button>
+                                  </div>
+                                </div>
+
+                                {/* Signs Grid - Placeholder for now */}
+                                <p className="text-xs text-muted-foreground text-center py-4">Variant signs coming soon...</p>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Expanded Content - For kits WITHOUT variants (show signs directly) */}
+                    {expandedPataKit === kit.code && !hasVariants && (
                       <div className="bg-muted/5 px-4 py-4 border-t border-border space-y-6">
                         {/* Blights Section */}
                         <div className="flex items-end gap-3">
@@ -1070,7 +1200,8 @@ export default function SignKitManager() {
                       </div>
                     )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </TabsContent>
