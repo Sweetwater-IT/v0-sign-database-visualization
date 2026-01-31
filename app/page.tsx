@@ -85,6 +85,12 @@ export default function SignKitManager() {
   const [pataKitContents, setPataKitContents] = useState<Record<string, Array<{ sign_designation: string; quantity: number; image_url?: string }>>>({});
   const [pataKitFinished, setPataKitFinished] = useState<Record<string, boolean>>({});
   const [ptsKitFinished, setPtsKitFinished] = useState<Record<string, boolean>>({});
+  const [pataKitVariants, setPataKitVariants] = useState<Record<string, Array<{ id: number; variant_label: string; description: string; finished: boolean; blights: number }>>>({});
+  const [ptsKitVariants, setPtsKitVariants] = useState<Record<string, Array<{ id: number; variant_label: string; description: string; finished: boolean; blights: number }>>>({});
+  const [expandedPataVariant, setExpandedPataVariant] = useState<string | null>(null);
+  const [expandedPtsVariant, setExpandedPtsVariant] = useState<string | null>(null);
+  const [pataVariantContents, setPataVariantContents] = useState<Record<string, Array<{ sign_designation: string; quantity: number; image_url?: string; description?: string }>>>({});
+  const [ptsVariantContents, setPtsVariantContents] = useState<Record<string, Array<{ sign_designation: string; quantity: number; image_url?: string; description?: string }>>>({});
   
   // Dialog states for adding to kits
   const [showAddPataDialog, setShowAddPataDialog] = useState(false);
@@ -161,6 +167,35 @@ export default function SignKitManager() {
     };
 
     fetchPtsKits();
+  }, []);
+
+  // Fetch PATA kit variants
+  useEffect(() => {
+    const fetchPataVariants = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('kit_variants')
+          .select('*')
+          .order('kit_id, variant_label', { ascending: true });
+        
+        if (error) throw error;
+        
+        // Group variants by kit_id
+        const variantsByKit: Record<string, Array<any>> = {};
+        data?.forEach(variant => {
+          const kitId = variant.kit_id.toString();
+          if (!variantsByKit[kitId]) {
+            variantsByKit[kitId] = [];
+          }
+          variantsByKit[kitId].push(variant);
+        });
+        setPataKitVariants(variantsByKit);
+      } catch (error) {
+        console.error('[v0] Error fetching PATA kit variants:', error);
+      }
+    };
+
+    fetchPataVariants();
   }, []);
 
   // Fetch PATA kit options
