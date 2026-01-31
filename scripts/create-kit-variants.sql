@@ -1,33 +1,35 @@
--- Create kit_variants table to store options for each kit
+-- First, create the kit_variants table without the foreign key initially
 CREATE TABLE IF NOT EXISTS kit_variants (
   id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  kit_id BIGINT NOT NULL REFERENCES pata_kits(id) ON DELETE CASCADE,
-  variant_label TEXT NOT NULL, -- "A", "B", etc.
-  description TEXT,
-  finished BOOLEAN DEFAULT FALSE,
-  blights INTEGER DEFAULT 0,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Create index for faster lookups
-CREATE INDEX idx_kit_variants_kit_id ON kit_variants(kit_id);
-
--- Update pata_kit_contents to reference variants instead of kits
-ALTER TABLE pata_kit_contents 
-ADD COLUMN IF NOT EXISTS kit_variant_id BIGINT REFERENCES kit_variants(id) ON DELETE CASCADE;
-
--- Same for PTS kits
-CREATE TABLE IF NOT EXISTS pts_kit_variants (
-  id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  kit_id BIGINT NOT NULL REFERENCES pts_kits(id) ON DELETE CASCADE,
+  kit_id BIGINT NOT NULL,
   variant_label TEXT NOT NULL,
   description TEXT,
   finished BOOLEAN DEFAULT FALSE,
   blights INTEGER DEFAULT 0,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(kit_id, variant_label)
 );
 
-CREATE INDEX idx_pts_kit_variants_kit_id ON pts_kit_variants(kit_id);
+CREATE INDEX IF NOT EXISTS idx_kit_variants_kit_id ON kit_variants(kit_id);
 
+-- Add the kit_variant_id column to pata_kit_contents
+ALTER TABLE pata_kit_contents 
+ADD COLUMN IF NOT EXISTS kit_variant_id BIGINT;
+
+-- Create the pts_kit_variants table
+CREATE TABLE IF NOT EXISTS pts_kit_variants (
+  id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  kit_id BIGINT NOT NULL,
+  variant_label TEXT NOT NULL,
+  description TEXT,
+  finished BOOLEAN DEFAULT FALSE,
+  blights INTEGER DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(kit_id, variant_label)
+);
+
+CREATE INDEX IF NOT EXISTS idx_pts_kit_variants_kit_id ON pts_kit_variants(kit_id);
+
+-- Add the kit_variant_id column to pts_kit_contents
 ALTER TABLE pts_kit_contents
-ADD COLUMN IF NOT EXISTS kit_variant_id BIGINT REFERENCES pts_kit_variants(id) ON DELETE CASCADE;
+ADD COLUMN IF NOT EXISTS kit_variant_id BIGINT;
