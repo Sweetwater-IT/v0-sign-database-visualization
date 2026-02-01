@@ -106,6 +106,63 @@ export default function SignKitManager() {
   
   const itemsPerPage = 50;
 
+  // Filter and paginate signs
+  const catalogSigns = signs.filter(sign => {
+    const matchesSearch = searchTerm === '' || 
+      sign.designation.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      sign.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === null || sign.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  const totalPages = Math.ceil(catalogSigns.length / itemsPerPage);
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const endIdx = startIdx + itemsPerPage;
+  const paginatedSigns = catalogSigns.slice(startIdx, endIdx);
+
+  // Add sign to kit function
+  const addToKit = async (kitCode: string, kitType: 'PATA' | 'PTS', quantity: number) => {
+    if (!selectedSignForKit) return;
+    
+    try {
+      const table = kitType === 'PATA' ? 'pata_kit_contents' : 'pts_kit_contents';
+      const kitCodeColumn = kitType === 'PATA' ? 'pata_kit_code' : 'pts_kit_code';
+      
+      const { error } = await supabase
+        .from(table)
+        .insert({
+          [kitCodeColumn]: kitCode,
+          sign_designation: selectedSignForKit.designation,
+          quantity: quantity
+        });
+      
+      if (error) throw error;
+      
+      // Clear the kit contents cache for this kit so it refetches
+      if (kitType === 'PATA') {
+        setPataKitContents(prev => {
+          const newContents = {...prev};
+          delete newContents[kitCode];
+          return newContents;
+        });
+        setShowAddPataDialog(false);
+      } else {
+        setPtsKitContents(prev => {
+          const newContents = {...prev};
+          delete newContents[kitCode];
+          return newContents;
+        });
+        setShowAddPtsDialog(false);
+      }
+      
+      setSelectedSignForKit(null);
+      setSelectedKitCode('');
+      setKitSignQuantity('1');
+    } catch (error) {
+      console.error('[v0] Error adding sign to kit:', error);
+    }
+  };
+
   // Fetch signs from Supabase
   useEffect(() => {
     const fetchSigns = async () => {
@@ -144,7 +201,7 @@ export default function SignKitManager() {
       try {
         const { data, error } = await supabase
           .from('pts_kits')
-          .select('id, code, description, finished, blights, has_variants')
+          .select('id, code, description, finished, blights, has_variants, team_check')
           .order('code', { ascending: true });
         
         if (error) throw error;
@@ -202,7 +259,7 @@ export default function SignKitManager() {
       try {
         const { data, error } = await supabase
           .from('pata_kits')
-          .select('id, code, description, finished, blights, has_variants')
+          .select('id, code, description, finished, blights, has_variants, team_check')
           .order('code', { ascending: true });
         
         if (error) throw error;
@@ -334,63 +391,32 @@ export default function SignKitManager() {
     fetchKitContents();
   }, [expandedPataKit]);
 
-  // Reset pagination when search or category filter changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, selectedCategory]);
-
-  // Filter signs based on search and category
-  const getFilteredSigns = (signList: Sign[]) => {
-    return signList.filter(sign => {
-      const matchesSearch =
-        sign.designation.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        sign.description.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory = !selectedCategory || sign.category === selectedCategory;
-      return matchesSearch && matchesCategory;
-    });
-  };
-
-  const catalogSigns = getFilteredSigns(signs);
-  
-  // Pagination logic
-  const totalPages = Math.ceil(catalogSigns.length / itemsPerPage);
-  const startIdx = (currentPage - 1) * itemsPerPage;
-  const endIdx = startIdx + itemsPerPage;
-  const paginatedSigns = catalogSigns.slice(startIdx, endIdx);
-  
-  const filteredPataKit = getFilteredSigns(pataKit);
-  const filteredPtsKit = getFilteredSigns(ptsKit);
-
-  const addToKit = async (kitCode: string, kitType: 'PATA' | 'PTS', quantity: number) => {
-    if (!selectedSignForKit) return;
-    
+  const toggleTeamCheck = async (kitType: 'PATA' | 'PTS', kitCode: string) => {
     try {
-      const tableName = kitType === 'PATA' ? 'pata_kit_contents' : 'pts_kit_contents';
-      const columnName = kitType === 'PATA' ? 'pata_kit_code' : 'pts_kit_code';
+      const table = kitType === 'PATA' ? 'pata_kits' : 'pts_kits';
+      const isCurrentlyChecked = kitType === 'PATA' 
+        ? pataKitOptions.find(k => k.code === kitCode)?.team_check 
+        : ptsKitOptions.find(k => k.code === kitCode)?.team_check;
       
-      // Insert into database
       const { error } = await supabase
-        .from(tableName)
-        .insert({
-          [columnName]: kitCode,
-          sign_designation: selectedSignForKit.designation,
-          quantity: quantity
-        });
+        .from(table)
+        .update({ team_check: !isCurrentlyChecked })
+        .eq('code', kitCode);
       
       if (error) throw error;
       
-      // Refresh kit contents
+      // Update local state
       if (kitType === 'PATA') {
-        setShowAddPataDialog(false);
+        setPataKitOptions(prev =>
+          prev.map(k => k.code === kitCode ? {...k, team_check: !isCurrentlyChecked} : k)
+        );
       } else {
-        setShowAddPtsDialog(false);
+        setPtsKitOptions(prev =>
+          prev.map(k => k.code === kitCode ? {...k, team_check: !isCurrentlyChecked} : k)
+        );
       }
-      
-      setSelectedSignForKit(null);
-      setSelectedKitCode('');
-      setKitSignQuantity('1');
     } catch (error) {
-      console.error('[v0] Error adding to kit:', error);
+      console.error('[v0] Error toggling team check:', error);
     }
   };
 
@@ -898,7 +924,7 @@ export default function SignKitManager() {
                         </svg>
                         <span className="text-sm font-semibold text-primary cursor-pointer">{kit.code}</span>
                       </div>
-                      <div className="col-span-9 flex items-center">
+                      <div className="col-span-8 flex items-center">
                         <span className="text-sm text-foreground">{kit.description || 'No description available'}</span>
                       </div>
                       <div className="col-span-1 flex items-center justify-center">
@@ -907,6 +933,23 @@ export default function SignKitManager() {
                         ) : (
                           <div className="w-5 h-5 border-2 border-muted-foreground rounded-full" />
                         )}
+                      </div>
+                      <div className="col-span-1 flex items-center justify-center">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleTeamCheck('PATA', kit.code);
+                          }}
+                        >
+                          {kit.team_check ? (
+                            <div className="w-5 h-5 bg-red-600 rounded" />
+                          ) : (
+                            <div className="w-5 h-5 border-2 border-red-600 rounded" />
+                          )}
+                        </Button>
                       </div>
                     </div>
 
@@ -1168,7 +1211,7 @@ export default function SignKitManager() {
                         </svg>
                         <span className="text-sm font-semibold text-primary">{kit.code}</span>
                       </div>
-                      <div className="col-span-9 flex items-center">
+                      <div className="col-span-8 flex items-center">
                         <span className="text-sm text-foreground">{kit.description || 'No description available'}</span>
                       </div>
                       <div className="col-span-1 flex items-center justify-center">
@@ -1177,6 +1220,23 @@ export default function SignKitManager() {
                         ) : (
                           <div className="w-5 h-5 border-2 border-muted-foreground rounded-full" />
                         )}
+                      </div>
+                      <div className="col-span-1 flex items-center justify-center">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleTeamCheck('PTS', kit.code);
+                          }}
+                        >
+                          {kit.team_check ? (
+                            <div className="w-5 h-5 bg-red-600 rounded" />
+                          ) : (
+                            <div className="w-5 h-5 border-2 border-red-600 rounded" />
+                          )}
+                        </Button>
                       </div>
                     </div>
 
