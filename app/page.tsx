@@ -936,6 +936,20 @@ export default function SignKitManager() {
                     {/* Expanded Content - Show signs/blights when: no variants OR variant is selected */}
                     {expandedPataKit === kit.code && (!hasVariants || selectedPataVariant[kit.code]) && (
                       <div className="bg-muted/5 px-4 py-4 border-t border-border space-y-6">
+                        {/* Variant Header - Show selected variant with back option */}
+                        {hasVariants && selectedPataVariant[kit.code] && (
+                          <div className="flex items-center justify-between mb-4 pb-4 border-b border-border">
+                            <p className="text-sm font-semibold text-foreground">Editing Option {selectedPataVariant[kit.code]}</p>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setSelectedPataVariant(prev => ({...prev, [kit.code]: null}))}
+                            >
+                              Change Option
+                            </Button>
+                          </div>
+                        )}
+                        
                         {/* Blights Section */}
                         <div className="flex items-end gap-3">
                           <div className="w-48">
@@ -998,7 +1012,10 @@ export default function SignKitManager() {
                             )}
                             <Button
                               size="sm"
-                              onClick={() => router.push(`/add-signs?type=PATA&kitCode=${kit.code}`)}
+                              onClick={() => {
+                                const variantParam = selectedPataVariant[kit.code] ? `&variant=${selectedPataVariant[kit.code]}` : '';
+                                router.push(`/add-signs?type=PATA&kitCode=${kit.code}${variantParam}`);
+                              }}
                               className="gap-1"
                             >
                               <Plus className="w-3 h-3" />
@@ -1162,8 +1179,46 @@ export default function SignKitManager() {
                     </div>
 
                     {/* Expanded Content */}
-                    {expandedPtsKit === kit.code && (
+                    {expandedPtsKit === kit.code && kit.has_variants && !selectedPtsVariant[kit.code] && (
+                      <div className="bg-muted/5 px-4 py-6 border-t border-border">
+                        <div className="flex flex-col items-center gap-4">
+                          <p className="text-sm font-semibold text-foreground">Select which option you want to edit:</p>
+                          <div className="flex gap-3">
+                            <Button
+                              size="lg"
+                              onClick={() => setSelectedPtsVariant(prev => ({...prev, [kit.code]: 'A'}))}
+                              className="w-32"
+                            >
+                              Option A
+                            </Button>
+                            <Button
+                              size="lg"
+                              onClick={() => setSelectedPtsVariant(prev => ({...prev, [kit.code]: 'B'}))}
+                              className="w-32"
+                            >
+                              Option B
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {expandedPtsKit === kit.code && (!kit.has_variants || selectedPtsVariant[kit.code]) && (
                       <div className="bg-muted/5 px-4 py-4 border-t border-border space-y-6">
+                        {/* Variant Header - Show selected variant with back option */}
+                        {kit.has_variants && selectedPtsVariant[kit.code] && (
+                          <div className="flex items-center justify-between mb-4 pb-4 border-b border-border">
+                            <p className="text-sm font-semibold text-foreground">Editing Option {selectedPtsVariant[kit.code]}</p>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setSelectedPtsVariant(prev => ({...prev, [kit.code]: null}))}
+                            >
+                              Change Option
+                            </Button>
+                          </div>
+                        )}
+                        
                         {/* Blights Section */}
                         <div className="flex items-end gap-3">
                           <div className="w-48">
@@ -1226,7 +1281,10 @@ export default function SignKitManager() {
                             )}
                             <Button
                               size="sm"
-                              onClick={() => router.push(`/add-signs?type=PTS&kitCode=${kit.code}`)}
+                              onClick={() => {
+                                const variantParam = selectedPtsVariant[kit.code] ? `&variant=${selectedPtsVariant[kit.code]}` : '';
+                                router.push(`/add-signs?type=PTS&kitCode=${kit.code}${variantParam}`);
+                              }}
                               className="gap-1"
                             >
                               <Plus className="w-3 h-3" />
