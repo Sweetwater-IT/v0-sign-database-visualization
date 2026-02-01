@@ -207,6 +207,7 @@ export default function SignKitManager() {
         
         if (error) throw error;
         console.log('[v0] Fetched PATA kits:', data?.length);
+        console.log('[v0] First few PATA kits with variants:', data?.slice(0, 5).map(k => ({code: k.code, has_variants: k.has_variants})));
         setPataKitOptions(data || []);
         
         // Populate finished state
