@@ -85,6 +85,10 @@ export default function SignKitManager() {
   const [pataKitContents, setPataKitContents] = useState<Record<string, Array<{ sign_designation: string; quantity: number; image_url?: string }>>>({});
   const [pataKitFinished, setPataKitFinished] = useState<Record<string, boolean>>({});
   const [ptsKitFinished, setPtsKitFinished] = useState<Record<string, boolean>>({});
+  const [selectedPataVariant, setSelectedPataVariant] = useState<Record<string, 'A' | 'B' | null>>({});
+  const [selectedPtsVariant, setSelectedPtsVariant] = useState<Record<string, 'A' | 'B' | null>>({});
+  const [pataKitVariants, setPataKitVariants] = useState<Record<string, Array<any>>>({});
+  const [expandedPataVariant, setExpandedPataVariant] = useState<string | null>(null);
   
   // Dialog states for adding to kits
   const [showAddPataDialog, setShowAddPataDialog] = useState(false);
@@ -101,6 +105,63 @@ export default function SignKitManager() {
   const [bulkAddKitType, setBulkAddKitType] = useState<'PATA' | 'PTS'>('PATA');
   
   const itemsPerPage = 50;
+
+  // Filter and paginate signs
+  const catalogSigns = signs.filter(sign => {
+    const matchesSearch = searchTerm === '' || 
+      sign.designation.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      sign.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === null || sign.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  const totalPages = Math.ceil(catalogSigns.length / itemsPerPage);
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const endIdx = startIdx + itemsPerPage;
+  const paginatedSigns = catalogSigns.slice(startIdx, endIdx);
+
+  // Add sign to kit function
+  const addToKit = async (kitCode: string, kitType: 'PATA' | 'PTS', quantity: number) => {
+    if (!selectedSignForKit) return;
+    
+    try {
+      const table = kitType === 'PATA' ? 'pata_kit_contents' : 'pts_kit_contents';
+      const kitCodeColumn = kitType === 'PATA' ? 'pata_kit_code' : 'pts_kit_code';
+      
+      const { error } = await supabase
+        .from(table)
+        .insert({
+          [kitCodeColumn]: kitCode,
+          sign_designation: selectedSignForKit.designation,
+          quantity: quantity
+        });
+      
+      if (error) throw error;
+      
+      // Clear the kit contents cache for this kit so it refetches
+      if (kitType === 'PATA') {
+        setPataKitContents(prev => {
+          const newContents = {...prev};
+          delete newContents[kitCode];
+          return newContents;
+        });
+        setShowAddPataDialog(false);
+      } else {
+        setPtsKitContents(prev => {
+          const newContents = {...prev};
+          delete newContents[kitCode];
+          return newContents;
+        });
+        setShowAddPtsDialog(false);
+      }
+      
+      setSelectedSignForKit(null);
+      setSelectedKitCode('');
+      setKitSignQuantity('1');
+    } catch (error) {
+      console.error('[v0] Error adding sign to kit:', error);
+    }
+  };
 
   // Fetch signs from Supabase
   useEffect(() => {
@@ -140,7 +201,7 @@ export default function SignKitManager() {
       try {
         const { data, error } = await supabase
           .from('pts_kits')
-          .select('id, code, description, finished, blights')
+          .select('id, code, description, finished, blights, has_variants, team_check')
           .order('code', { ascending: true });
         
         if (error) throw error;
@@ -163,17 +224,48 @@ export default function SignKitManager() {
     fetchPtsKits();
   }, []);
 
+  // Fetch PATA kit variants
+  useEffect(() => {
+    const fetchPataVariants = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('kit_variants')
+          .select('*')
+          .order('kit_id, variant_label', { ascending: true });
+        
+        if (error) throw error;
+        
+        // Group variants by kit_id
+        const variantsByKit: Record<string, Array<any>> = {};
+        data?.forEach(variant => {
+          const kitId = variant.kit_id.toString();
+          if (!variantsByKit[kitId]) {
+            variantsByKit[kitId] = [];
+          }
+          variantsByKit[kitId].push(variant);
+        });
+        setPataKitVariants(variantsByKit);
+      } catch (error) {
+        console.error('[v0] Error fetching PATA kit variants:', error);
+      }
+    };
+
+    fetchPataVariants();
+  }, []);
+
   // Fetch PATA kit options
   useEffect(() => {
     const fetchPataKits = async () => {
       try {
         const { data, error } = await supabase
           .from('pata_kits')
-          .select('id, code, description, finished, blights')
+          .select('id, code, description, finished, blights, has_variants, team_check')
           .order('code', { ascending: true });
         
         if (error) throw error;
         console.log('[v0] Fetched PATA kits:', data?.length);
+        const variantKits = data?.filter(k => ['402', '403', '404', '405', '406', '409', '502', '503', '504', '505', '506', '507', '508'].some(code => k.code.includes(code)));
+        console.log('[v0] PATA kits that should have variants:', variantKits?.map(k => ({code: k.code, has_variants: k.has_variants})));
         setPataKitOptions(data || []);
         
         // Populate finished state
@@ -299,63 +391,32 @@ export default function SignKitManager() {
     fetchKitContents();
   }, [expandedPataKit]);
 
-  // Reset pagination when search or category filter changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, selectedCategory]);
-
-  // Filter signs based on search and category
-  const getFilteredSigns = (signList: Sign[]) => {
-    return signList.filter(sign => {
-      const matchesSearch =
-        sign.designation.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        sign.description.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory = !selectedCategory || sign.category === selectedCategory;
-      return matchesSearch && matchesCategory;
-    });
-  };
-
-  const catalogSigns = getFilteredSigns(signs);
-  
-  // Pagination logic
-  const totalPages = Math.ceil(catalogSigns.length / itemsPerPage);
-  const startIdx = (currentPage - 1) * itemsPerPage;
-  const endIdx = startIdx + itemsPerPage;
-  const paginatedSigns = catalogSigns.slice(startIdx, endIdx);
-  
-  const filteredPataKit = getFilteredSigns(pataKit);
-  const filteredPtsKit = getFilteredSigns(ptsKit);
-
-  const addToKit = async (kitCode: string, kitType: 'PATA' | 'PTS', quantity: number) => {
-    if (!selectedSignForKit) return;
-    
+  const toggleTeamCheck = async (kitType: 'PATA' | 'PTS', kitCode: string) => {
     try {
-      const tableName = kitType === 'PATA' ? 'pata_kit_contents' : 'pts_kit_contents';
-      const columnName = kitType === 'PATA' ? 'pata_kit_code' : 'pts_kit_code';
+      const table = kitType === 'PATA' ? 'pata_kits' : 'pts_kits';
+      const isCurrentlyChecked = kitType === 'PATA' 
+        ? pataKitOptions.find(k => k.code === kitCode)?.team_check 
+        : ptsKitOptions.find(k => k.code === kitCode)?.team_check;
       
-      // Insert into database
       const { error } = await supabase
-        .from(tableName)
-        .insert({
-          [columnName]: kitCode,
-          sign_designation: selectedSignForKit.designation,
-          quantity: quantity
-        });
+        .from(table)
+        .update({ team_check: !isCurrentlyChecked })
+        .eq('code', kitCode);
       
       if (error) throw error;
       
-      // Refresh kit contents
+      // Update local state
       if (kitType === 'PATA') {
-        setShowAddPataDialog(false);
+        setPataKitOptions(prev =>
+          prev.map(k => k.code === kitCode ? {...k, team_check: !isCurrentlyChecked} : k)
+        );
       } else {
-        setShowAddPtsDialog(false);
+        setPtsKitOptions(prev =>
+          prev.map(k => k.code === kitCode ? {...k, team_check: !isCurrentlyChecked} : k)
+        );
       }
-      
-      setSelectedSignForKit(null);
-      setSelectedKitCode('');
-      setKitSignQuantity('1');
     } catch (error) {
-      console.error('[v0] Error adding to kit:', error);
+      console.error('[v0] Error toggling team check:', error);
     }
   };
 
@@ -841,7 +902,10 @@ export default function SignKitManager() {
 
               {/* Table Rows */}
               <div className="divide-y divide-border">
-                {pataKitOptions.map((kit) => (
+                {pataKitOptions.map((kit) => {
+                  const hasVariants = kit.has_variants === true;
+                  
+                  return (
                   <div key={kit.id}>
                     {/* Kit Row */}
                     <div 
@@ -858,9 +922,9 @@ export default function SignKitManager() {
                         >
                           <polyline points="9 18 15 12 9 6" />
                         </svg>
-                        <span className="text-sm font-semibold text-primary cursor-pointer" onClick={() => setExpandedPataKit(expandedPataKit === kit.code ? null : kit.code)}>{kit.code}</span>
+                        <span className="text-sm font-semibold text-primary cursor-pointer">{kit.code}</span>
                       </div>
-                      <div className="col-span-9 flex items-center">
+                      <div className="col-span-8 flex items-center">
                         <span className="text-sm text-foreground">{kit.description || 'No description available'}</span>
                       </div>
                       <div className="col-span-1 flex items-center justify-center">
@@ -870,11 +934,67 @@ export default function SignKitManager() {
                           <div className="w-5 h-5 border-2 border-muted-foreground rounded-full" />
                         )}
                       </div>
+                      <div className="col-span-1 flex items-center justify-center">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleTeamCheck('PATA', kit.code);
+                          }}
+                        >
+                          {kit.team_check ? (
+                            <div className="w-5 h-5 bg-red-600 rounded" />
+                          ) : (
+                            <div className="w-5 h-5 border-2 border-red-600 rounded" />
+                          )}
+                        </Button>
+                      </div>
                     </div>
 
-                    {/* Expanded Content */}
-                    {expandedPataKit === kit.code && (
+                    {/* Expanded Content - Show Variant Selector if has variants */}
+                    {expandedPataKit === kit.code && hasVariants && !selectedPataVariant[kit.code] && (
+                      <div className="bg-muted/5 px-4 py-6 border-t border-border">
+                        <div className="flex flex-col items-center gap-4">
+                          <p className="text-sm font-semibold text-foreground">Select which option you want to edit:</p>
+                          <div className="flex gap-3">
+                            <Button
+                              size="lg"
+                              onClick={() => setSelectedPataVariant(prev => ({...prev, [kit.code]: 'A'}))}
+                              className="w-32"
+                            >
+                              Option A
+                            </Button>
+                            <Button
+                              size="lg"
+                              onClick={() => setSelectedPataVariant(prev => ({...prev, [kit.code]: 'B'}))}
+                              className="w-32"
+                            >
+                              Option B
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Expanded Content - Show signs/blights when: no variants OR variant is selected */}
+                    {expandedPataKit === kit.code && (!hasVariants || selectedPataVariant[kit.code]) && (
                       <div className="bg-muted/5 px-4 py-4 border-t border-border space-y-6">
+                        {/* Variant Header - Show selected variant with back option */}
+                        {hasVariants && selectedPataVariant[kit.code] && (
+                          <div className="flex items-center justify-between mb-4 pb-4 border-b border-border">
+                            <p className="text-sm font-semibold text-foreground">Editing Option {selectedPataVariant[kit.code]}</p>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setSelectedPataVariant(prev => ({...prev, [kit.code]: null}))}
+                            >
+                              Change Option
+                            </Button>
+                          </div>
+                        )}
+                        
                         {/* Blights Section */}
                         <div className="flex items-end gap-3">
                           <div className="w-48">
@@ -937,7 +1057,10 @@ export default function SignKitManager() {
                             )}
                             <Button
                               size="sm"
-                              onClick={() => router.push(`/add-signs?type=PATA&kitCode=${kit.code}`)}
+                              onClick={() => {
+                                const variantParam = selectedPataVariant[kit.code] ? `&variant=${selectedPataVariant[kit.code]}` : '';
+                                router.push(`/add-signs?type=PATA&kitCode=${kit.code}${variantParam}`);
+                              }}
                               className="gap-1"
                             >
                               <Plus className="w-3 h-3" />
@@ -1035,7 +1158,8 @@ export default function SignKitManager() {
                       </div>
                     )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </TabsContent>
@@ -1087,7 +1211,7 @@ export default function SignKitManager() {
                         </svg>
                         <span className="text-sm font-semibold text-primary">{kit.code}</span>
                       </div>
-                      <div className="col-span-9 flex items-center">
+                      <div className="col-span-8 flex items-center">
                         <span className="text-sm text-foreground">{kit.description || 'No description available'}</span>
                       </div>
                       <div className="col-span-1 flex items-center justify-center">
@@ -1097,11 +1221,66 @@ export default function SignKitManager() {
                           <div className="w-5 h-5 border-2 border-muted-foreground rounded-full" />
                         )}
                       </div>
+                      <div className="col-span-1 flex items-center justify-center">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleTeamCheck('PTS', kit.code);
+                          }}
+                        >
+                          {kit.team_check ? (
+                            <div className="w-5 h-5 bg-red-600 rounded" />
+                          ) : (
+                            <div className="w-5 h-5 border-2 border-red-600 rounded" />
+                          )}
+                        </Button>
+                      </div>
                     </div>
 
                     {/* Expanded Content */}
-                    {expandedPtsKit === kit.code && (
+                    {expandedPtsKit === kit.code && kit.has_variants && !selectedPtsVariant[kit.code] && (
+                      <div className="bg-muted/5 px-4 py-6 border-t border-border">
+                        <div className="flex flex-col items-center gap-4">
+                          <p className="text-sm font-semibold text-foreground">Select which option you want to edit:</p>
+                          <div className="flex gap-3">
+                            <Button
+                              size="lg"
+                              onClick={() => setSelectedPtsVariant(prev => ({...prev, [kit.code]: 'A'}))}
+                              className="w-32"
+                            >
+                              Option A
+                            </Button>
+                            <Button
+                              size="lg"
+                              onClick={() => setSelectedPtsVariant(prev => ({...prev, [kit.code]: 'B'}))}
+                              className="w-32"
+                            >
+                              Option B
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {expandedPtsKit === kit.code && (!kit.has_variants || selectedPtsVariant[kit.code]) && (
                       <div className="bg-muted/5 px-4 py-4 border-t border-border space-y-6">
+                        {/* Variant Header - Show selected variant with back option */}
+                        {kit.has_variants && selectedPtsVariant[kit.code] && (
+                          <div className="flex items-center justify-between mb-4 pb-4 border-b border-border">
+                            <p className="text-sm font-semibold text-foreground">Editing Option {selectedPtsVariant[kit.code]}</p>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setSelectedPtsVariant(prev => ({...prev, [kit.code]: null}))}
+                            >
+                              Change Option
+                            </Button>
+                          </div>
+                        )}
+                        
                         {/* Blights Section */}
                         <div className="flex items-end gap-3">
                           <div className="w-48">
@@ -1164,7 +1343,10 @@ export default function SignKitManager() {
                             )}
                             <Button
                               size="sm"
-                              onClick={() => router.push(`/add-signs?type=PTS&kitCode=${kit.code}`)}
+                              onClick={() => {
+                                const variantParam = selectedPtsVariant[kit.code] ? `&variant=${selectedPtsVariant[kit.code]}` : '';
+                                router.push(`/add-signs?type=PTS&kitCode=${kit.code}${variantParam}`);
+                              }}
                               className="gap-1"
                             >
                               <Plus className="w-3 h-3" />
