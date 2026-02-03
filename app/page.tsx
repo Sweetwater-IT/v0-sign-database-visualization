@@ -1530,14 +1530,18 @@ export default function SignKitManager() {
                           {/* Right Column: Kit Diagram */}
                           <div>
                             <h3 className="text-sm font-semibold text-foreground mb-2">Kit Diagram</h3>
-                            <iframe
-                              src={
-                                kit.page
-                                  ? `https://raw.githubusercontent.com/Sweetwater-IT/v0-sign-database-visualization/bb1285784a847336c57f3981c800b9392c2bc04c/public/pts-diagrams/${kit.page}.pdf`
-                                  : '/placeholder.pdf'
-                              }
-                              className="w-full h-[600px] border rounded"
-                              title={`PTS Kit ${kit.code} Diagram`}
+                            <img
+                              src={kit.image_url}
+                              alt={`PTS Kit ${kit.code} Diagram`}
+                              className="w-full h-auto max-h-[80vh] object-contain border rounded"
+                            />
+                          </div>
+=======
+                            <img
+                              src={kit.image_url}
+                              alt={`PTS Kit ${kit.code} Diagram`}
+                              className="w-full h-auto max-h-[80vh] object-contain border rounded"
+>>>>>>> cd5050f (Replace PTS iframe with img tag for PNG diagrams)
                             />
                           </div>
                         </div>
