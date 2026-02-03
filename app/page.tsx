@@ -1094,7 +1094,8 @@ export default function SignKitManager() {
                                   result.push(
                                     <div key={col} className="flex flex-col border border-border rounded-lg overflow-hidden">
                                       {/* Column Header */}
-                                      <div className="grid grid-cols-3 gap-2 bg-muted px-3 py-2 border-b border-border sticky top-0">
+                                      <div className="grid gap-2 bg-muted px-3 py-2 border-b border-border sticky top-0" style={{ gridTemplateColumns: '50px 1fr 1fr 80px' }}>
+                                        <div className="text-xs font-semibold text-foreground">Image</div>
                                         <div className="text-xs font-semibold text-foreground">Sign</div>
                                         <div className="text-xs font-semibold text-foreground">Description</div>
                                         <div className="text-xs font-semibold text-foreground text-center">Quantity</div>
@@ -1104,7 +1105,27 @@ export default function SignKitManager() {
                                       {columnSigns.map((item, idx) => {
                                         const globalIdx = startIdx + idx;
                                         return (
-                                          <div key={globalIdx} className="grid grid-cols-3 gap-2 px-3 py-2 border-b border-border hover:bg-muted/30 transition-colors last:border-b-0">
+                                          <div key={globalIdx} className="grid gap-2 px-3 py-2 border-b border-border hover:bg-muted/30 transition-colors last:border-b-0" style={{ gridTemplateColumns: '50px 1fr 1fr 80px' }}>
+                                            {/* Image Thumbnail */}
+                                            <div className="flex items-center justify-center">
+                                              <div className="w-12 h-12 bg-white border border-border rounded flex items-center justify-center overflow-hidden flex-shrink-0">
+                                                {item.image_url ? (
+                                                  <img 
+                                                    src={item.image_url || "/placeholder.svg"} 
+                                                    alt={item.sign_designation}
+                                                    className="w-10 h-10 object-contain"
+                                                    onError={(e) => {
+                                                      e.currentTarget.style.display = 'none';
+                                                    }}
+                                                  />
+                                                ) : (
+                                                  <div className="w-10 h-10 bg-slate-100 rounded flex items-center justify-center">
+                                                    <span className="text-xs text-slate-400">—</span>
+                                                  </div>
+                                                )}
+                                              </div>
+                                            </div>
+                                            
                                             {/* Sign Designation */}
                                             <div className="flex items-center">
                                               <p className="text-xs font-medium text-foreground">{item.sign_designation}</p>
@@ -1380,7 +1401,8 @@ export default function SignKitManager() {
                                   result.push(
                                     <div key={col} className="flex flex-col border border-border rounded-lg overflow-hidden">
                                       {/* Column Header */}
-                                      <div className="grid grid-cols-3 gap-2 bg-muted px-3 py-2 border-b border-border sticky top-0">
+                                      <div className="grid gap-2 bg-muted px-3 py-2 border-b border-border sticky top-0" style={{ gridTemplateColumns: '50px 1fr 1fr 80px' }}>
+                                        <div className="text-xs font-semibold text-foreground">Image</div>
                                         <div className="text-xs font-semibold text-foreground">Sign</div>
                                         <div className="text-xs font-semibold text-foreground">Description</div>
                                         <div className="text-xs font-semibold text-foreground text-center">Quantity</div>
@@ -1390,7 +1412,27 @@ export default function SignKitManager() {
                                       {columnSigns.map((item, idx) => {
                                         const globalIdx = startIdx + idx;
                                         return (
-                                          <div key={globalIdx} className="grid grid-cols-3 gap-2 px-3 py-2 border-b border-border hover:bg-muted/30 transition-colors last:border-b-0">
+                                          <div key={globalIdx} className="grid gap-2 px-3 py-2 border-b border-border hover:bg-muted/30 transition-colors last:border-b-0" style={{ gridTemplateColumns: '50px 1fr 1fr 80px' }}>
+                                            {/* Image Thumbnail */}
+                                            <div className="flex items-center justify-center">
+                                              <div className="w-12 h-12 bg-white border border-border rounded flex items-center justify-center overflow-hidden flex-shrink-0">
+                                                {item.image_url ? (
+                                                  <img 
+                                                    src={item.image_url || "/placeholder.svg"} 
+                                                    alt={item.sign_designation}
+                                                    className="w-10 h-10 object-contain"
+                                                    onError={(e) => {
+                                                      e.currentTarget.style.display = 'none';
+                                                    }}
+                                                  />
+                                                ) : (
+                                                  <div className="w-10 h-10 bg-slate-100 rounded flex items-center justify-center">
+                                                    <span className="text-xs text-slate-400">—</span>
+                                                  </div>
+                                                )}
+                                              </div>
+                                            </div>
+                                            
                                             {/* Sign Designation */}
                                             <div className="flex items-center">
                                               <p className="text-xs font-medium text-foreground">{item.sign_designation}</p>
