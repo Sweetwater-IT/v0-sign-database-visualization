@@ -1531,7 +1531,11 @@ export default function SignKitManager() {
                           <div>
                             <h3 className="text-sm font-semibold text-foreground mb-2">Kit Diagram</h3>
                             <iframe
-                              src={kit.page ? `https://raw.githubusercontent.com/Sweetwater-IT/v0-sign-database-visualization/main/public/pts-diagrams/${kit.page}.pdf` : '/placeholder.pdf'}
+                              src={
+                                kit.page
+                                  ? `https://raw.githubusercontent.com/Sweetwater-IT/v0-sign-database-visualization/bb1285784a847336c57f3981c800b9392c2bc04c/public/pts-diagrams/${kit.page}.pdf`
+                                  : '/placeholder.pdf'
+                              }
                               className="w-full h-[600px] border rounded"
                               title={`PTS Kit ${kit.code} Diagram`}
                             />
