@@ -165,9 +165,13 @@ export default function SignKitManager() {
 
   // Fetch signs from Supabase
   useEffect(() => {
+    let isMounted = true;
+    let retryCount = 0;
+    const maxRetries = 3;
+
     const fetchSigns = async () => {
       try {
-        console.log('[v0] Fetching signs from Supabase...');
+        console.log('[v0] Fetching signs from Supabase (attempt', retryCount + 1, ')...');
         const { data, error } = await supabase
           .from('signs')
           .select('*')
@@ -175,10 +179,22 @@ export default function SignKitManager() {
           .range(0, 999);
 
         if (error) {
-          console.error('[v0] Supabase error:', error);
+          console.error('[v0] Supabase error details:', error.message, error.code, error.status);
+          
+          // Retry logic for transient errors
+          if (retryCount < maxRetries && error.status !== 401 && error.status !== 403) {
+            retryCount++;
+            setTimeout(() => {
+              if (isMounted) fetchSigns();
+            }, 1000 * retryCount);
+            return;
+          }
+          
           throw error;
         }
 
+        if (!isMounted) return;
+        
         console.log('[v0] Fetched signs:', data?.length || 0);
         setSigns(data || []);
         const uniqueCategories = Array.from(
@@ -186,13 +202,21 @@ export default function SignKitManager() {
         ).sort();
         setCategories(uniqueCategories as string[]);
         setLoading(false);
-      } catch (error) {
-        console.error('[v0] Error fetching signs:', error);
+      } catch (error: any) {
+        if (!isMounted) return;
+        console.error('[v0] Error fetching signs:', error?.message || error);
+        // Set empty signs array to prevent blocking UI
+        setSigns([]);
+        setCategories([]);
         setLoading(false);
       }
     };
 
     fetchSigns();
+    
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // Fetch PTS kit options
@@ -980,25 +1004,11 @@ export default function SignKitManager() {
 
                     {/* Expanded Content - Show signs/blights when: no variants OR variant is selected */}
                     {expandedPataKit === kit.code && (!hasVariants || selectedPataVariant[kit.code]) && (
-                      <div className="bg-muted/5 px-4 py-4 border-t border-border space-y-6">
-                        {/* Variant Header - Show selected variant with back option */}
-                        {hasVariants && selectedPataVariant[kit.code] && (
-                          <div className="flex items-center justify-between mb-4 pb-4 border-b border-border">
-                            <p className="text-sm font-semibold text-foreground">Editing Option {selectedPataVariant[kit.code]}</p>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => setSelectedPataVariant(prev => ({...prev, [kit.code]: null}))}
-                            >
-                              Change Option
-                            </Button>
-                          </div>
-                        )}
-                        
-                        {/* Blights Section */}
-                        <div className="flex items-end gap-3">
-                          <div className="w-48">
-                            <label className="text-sm font-semibold text-foreground block mb-2">Number of Blights</label>
+                      <div className="bg-muted/5 px-4 py-4 border-t border-border space-y-4">
+                        {/* Blights Section - Always at Top */}
+                        <div className="flex items-center gap-4 pb-4">
+                          <label className="text-sm font-semibold text-foreground min-w-fit">Blights:</label>
+                          <div className="w-40">
                             <QuantityInput
                               value={kit.blights || 0}
                               onChange={async (newValue) => {
@@ -1010,7 +1020,6 @@ export default function SignKitManager() {
                                   
                                   if (error) throw error;
                                   
-                                  // Update kit options to reflect change
                                   setPataKitOptions(prev =>
                                     prev.map(k => k.code === kit.code ? {...k, blights: newValue} : k)
                                   );
@@ -1031,7 +1040,6 @@ export default function SignKitManager() {
                                 size="sm"
                                 onClick={async () => {
                                   try {
-                                    // Update database
                                     const { error } = await supabase
                                       .from('pata_kits')
                                       .update({ finished: true })
@@ -1039,7 +1047,6 @@ export default function SignKitManager() {
                                     
                                     if (error) throw error;
                                     
-                                    // Update local state
                                     setPataKitFinished(prev => ({
                                       ...prev,
                                       [kit.code]: true
@@ -1068,92 +1075,130 @@ export default function SignKitManager() {
                             </Button>
                           </div>
                         </div>
+
+                        {/* Signs Table */}
                         {pataKitContents[kit.code] && pataKitContents[kit.code].length > 0 ? (
-                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                            {pataKitContents[kit.code].map((item, idx) => (
-                              <div key={idx} className="flex flex-col items-center gap-2 p-3 bg-card border border-border rounded-lg">
-                                {/* Sign Image */}
-                                <div className="w-20 h-20 bg-white border border-border rounded flex items-center justify-center overflow-hidden">
-                                  {item.image_url ? (
-                                    <img 
-                                      src={item.image_url || "/placeholder.svg"} 
-                                      alt={item.sign_designation}
-                                      className="w-16 h-16 object-contain"
-                                      onError={(e) => {
-                                        e.currentTarget.style.display = 'none';
-                                      }}
-                                    />
-                                  ) : (
-                                    <div className="w-16 h-16 bg-slate-100 rounded flex items-center justify-center">
-                                      <span className="text-xs text-slate-400">No image</span>
+                          <div className="overflow-x-auto">
+                            <div className="flex gap-6">
+                              {(() => {
+                                const signs = pataKitContents[kit.code];
+                                const rowsPerColumn = 8;
+                                const columns = Math.ceil(signs.length / rowsPerColumn);
+                                const result = [];
+                                
+                                for (let col = 0; col < columns; col++) {
+                                  const startIdx = col * rowsPerColumn;
+                                  const endIdx = Math.min(startIdx + rowsPerColumn, signs.length);
+                                  const columnSigns = signs.slice(startIdx, endIdx);
+                                  
+                                  result.push(
+                                    <div key={col} className="flex flex-col border border-border rounded-lg overflow-hidden min-w-[600px]">
+                                      {/* Column Header */}
+                                      <div className="grid gap-4 bg-muted px-4 py-3 border-b border-border sticky top-0" style={{ gridTemplateColumns: '80px 120px 1fr 100px' }}>
+                                        <div className="text-xs font-semibold text-foreground">Image</div>
+                                        <div className="text-xs font-semibold text-foreground">Sign</div>
+                                        <div className="text-xs font-semibold text-foreground">Description</div>
+                                        <div className="text-xs font-semibold text-foreground text-center">Quantity</div>
+                                      </div>
+                                      
+                                      {/* Column Rows */}
+                                      {columnSigns.map((item, idx) => {
+                                        const globalIdx = startIdx + idx;
+                                        return (
+                                          <div key={globalIdx} className="grid gap-4 px-4 py-3 border-b border-border hover:bg-muted/30 transition-colors last:border-b-0" style={{ gridTemplateColumns: '80px 120px 1fr 100px' }}>
+                                            {/* Image Thumbnail */}
+                                            <div className="flex items-center justify-center">
+                                              <div className="w-16 h-16 bg-white border border-border rounded flex items-center justify-center overflow-hidden flex-shrink-0">
+                                                {item.image_url ? (
+                                                  <img 
+                                                    src={item.image_url || "/placeholder.svg"} 
+                                                    alt={item.sign_designation}
+                                                    className="w-14 h-14 object-contain"
+                                                    onError={(e) => {
+                                                      e.currentTarget.style.display = 'none';
+                                                    }}
+                                                  />
+                                                ) : (
+                                                  <div className="w-14 h-14 bg-slate-100 rounded flex items-center justify-center">
+                                                    <span className="text-sm text-slate-400">—</span>
+                                                  </div>
+                                                )}
+                                              </div>
+                                            </div>
+                                            
+                                            {/* Sign Designation */}
+                                            <div className="flex items-center">
+                                              <p className="text-sm font-medium text-foreground">{item.sign_designation}</p>
+                                            </div>
+                                            
+                                            {/* Description */}
+                                            <div className="flex items-center">
+                                              <p className="text-sm text-muted-foreground line-clamp-2">{item.description || '-'}</p>
+                                            </div>
+                                            
+                                            {/* Quantity with tight input */}
+                                            <div className="flex items-center justify-center gap-1.5">
+                                              <QuantityInput
+                                                value={item.quantity || 0}
+                                                onChange={async (newQty) => {
+                                                  try {
+                                                    const { error } = await supabase
+                                                      .from('pata_kit_contents')
+                                                      .update({ quantity: newQty })
+                                                      .eq('pata_kit_code', kit.code)
+                                                      .eq('sign_designation', item.sign_designation);
+                                                    
+                                                    if (error) throw error;
+                                                    
+                                                    setPataKitContents(prev => ({
+                                                      ...prev,
+                                                      [kit.code]: prev[kit.code].map((s, i) => 
+                                                        i === globalIdx ? {...s, quantity: newQty} : s
+                                                      )
+                                                    }));
+                                                  } catch (error) {
+                                                    console.error('[v0] Error updating quantity:', error);
+                                                  }
+                                                }}
+                                              />
+                                              <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-6 w-6 text-destructive hover:text-destructive"
+                                                onClick={async () => {
+                                                  try {
+                                                    const { error } = await supabase
+                                                      .from('pata_kit_contents')
+                                                      .delete()
+                                                      .eq('pata_kit_code', kit.code)
+                                                      .eq('sign_designation', item.sign_designation);
+                                                    
+                                                    if (error) throw error;
+                                                    
+                                                    setPataKitContents(prev => ({
+                                                      ...prev,
+                                                      [kit.code]: prev[kit.code].filter((_, i) => i !== globalIdx)
+                                                    }));
+                                                  } catch (error) {
+                                                    console.error('[v0] Error deleting sign:', error);
+                                                  }
+                                                }}
+                                              >
+                                                <Trash2 className="w-4 h-4" />
+                                              </Button>
+                                            </div>
+                                          </div>
+                                        );
+                                      })}
                                     </div>
-                                  )}
-                                </div>
-                                {/* Sign Label */}
-                                <p className="text-xs font-semibold text-center text-foreground">{item.sign_designation}</p>
-                                {/* Sign Description */}
-                                {item.description && (
-                                  <p className="text-xs text-center text-muted-foreground line-clamp-2">{item.description}</p>
-                                )}
-                                {/* Quantity Controls */}
-                                <div className="flex items-center justify-center gap-1 w-full">
-                                  <QuantityInput
-                                    value={item.quantity || 0}
-                                    onChange={async (newQty) => {
-                                      try {
-                                        const { error } = await supabase
-                                          .from('pata_kit_contents')
-                                          .update({ quantity: newQty })
-                                          .eq('pata_kit_code', kit.code)
-                                          .eq('sign_designation', item.sign_designation);
-                                        
-                                        if (error) throw error;
-                                        
-                                        // Update local state
-                                        setPataKitContents(prev => ({
-                                          ...prev,
-                                          [kit.code]: prev[kit.code].map((s, i) => 
-                                            i === idx ? {...s, quantity: newQty} : s
-                                          )
-                                        }));
-                                      } catch (error) {
-                                        console.error('[v0] Error updating quantity:', error);
-                                      }
-                                    }}
-                                  />
-                                </div>
-                                {/* Delete Button */}
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-6 w-6 text-destructive hover:text-destructive"
-                                  onClick={async () => {
-                                    try {
-                                      const { error } = await supabase
-                                        .from('pata_kit_contents')
-                                        .delete()
-                                        .eq('pata_kit_code', kit.code)
-                                        .eq('sign_designation', item.sign_designation);
-                                      
-                                      if (error) throw error;
-                                      
-                                      // Update local state
-                                      setPataKitContents(prev => ({
-                                        ...prev,
-                                        [kit.code]: prev[kit.code].filter((_, i) => i !== idx)
-                                      }));
-                                    } catch (error) {
-                                      console.error('[v0] Error deleting sign:', error);
-                                    }
-                                  }}
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </Button>
-                              </div>
-                            ))}
+                                  );
+                                }
+                                return result;
+                              })()}
+                            </div>
                           </div>
                         ) : (
-                          <p className="text-xs text-muted-foreground">No signs in this kit yet.</p>
+                          <p className="text-xs text-muted-foreground text-center py-6">No signs added yet</p>
                         )}
                       </div>
                     )}
@@ -1266,25 +1311,11 @@ export default function SignKitManager() {
                     )}
 
                     {expandedPtsKit === kit.code && (!kit.has_variants || selectedPtsVariant[kit.code]) && (
-                      <div className="bg-muted/5 px-4 py-4 border-t border-border space-y-6">
-                        {/* Variant Header - Show selected variant with back option */}
-                        {kit.has_variants && selectedPtsVariant[kit.code] && (
-                          <div className="flex items-center justify-between mb-4 pb-4 border-b border-border">
-                            <p className="text-sm font-semibold text-foreground">Editing Option {selectedPtsVariant[kit.code]}</p>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => setSelectedPtsVariant(prev => ({...prev, [kit.code]: null}))}
-                            >
-                              Change Option
-                            </Button>
-                          </div>
-                        )}
-                        
-                        {/* Blights Section */}
-                        <div className="flex items-end gap-3">
-                          <div className="w-48">
-                            <label className="text-sm font-semibold text-foreground block mb-2">Number of Blights</label>
+                      <div className="bg-muted/5 px-4 py-4 border-t border-border space-y-4">
+                        {/* Blights Section - Always at Top */}
+                        <div className="flex items-center gap-4 pb-4">
+                          <label className="text-sm font-semibold text-foreground min-w-fit">Blights:</label>
+                          <div className="w-40">
                             <QuantityInput
                               value={kit.blights || 0}
                               onChange={async (newValue) => {
@@ -1296,7 +1327,6 @@ export default function SignKitManager() {
                                   
                                   if (error) throw error;
                                   
-                                  // Update kit options to reflect change
                                   setPtsKitOptions(prev =>
                                     prev.map(k => k.code === kit.code ? {...k, blights: newValue} : k)
                                   );
@@ -1317,7 +1347,6 @@ export default function SignKitManager() {
                                 size="sm"
                                 onClick={async () => {
                                   try {
-                                    // Update database
                                     const { error } = await supabase
                                       .from('pts_kits')
                                       .update({ finished: true })
@@ -1325,7 +1354,6 @@ export default function SignKitManager() {
                                     
                                     if (error) throw error;
                                     
-                                    // Update local state
                                     setPtsKitFinished(prev => ({
                                       ...prev,
                                       [kit.code]: true
@@ -1354,93 +1382,130 @@ export default function SignKitManager() {
                             </Button>
                           </div>
                         </div>
-                        {/* Signs Grid */}
+
+                        {/* Signs Table */}
                         {ptsKitContents[kit.code] && ptsKitContents[kit.code].length > 0 ? (
-                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                            {ptsKitContents[kit.code].map((item, idx) => (
-                              <div key={idx} className="flex flex-col items-center gap-2 p-3 bg-card border border-border rounded-lg">
-                                {/* Sign Image */}
-                                <div className="w-20 h-20 bg-white border border-border rounded flex items-center justify-center overflow-hidden">
-                                  {item.image_url ? (
-                                    <img 
-                                      src={item.image_url || "/placeholder.svg"} 
-                                      alt={item.sign_designation}
-                                      className="w-16 h-16 object-contain"
-                                      onError={(e) => {
-                                        e.currentTarget.style.display = 'none';
-                                      }}
-                                    />
-                                  ) : (
-                                    <div className="w-16 h-16 bg-slate-100 rounded flex items-center justify-center">
-                                      <span className="text-xs text-slate-400">No image</span>
+                          <div className="overflow-x-auto">
+                            <div className="flex gap-6">
+                              {(() => {
+                                const signs = ptsKitContents[kit.code];
+                                const rowsPerColumn = 8;
+                                const columns = Math.ceil(signs.length / rowsPerColumn);
+                                const result = [];
+                                
+                                for (let col = 0; col < columns; col++) {
+                                  const startIdx = col * rowsPerColumn;
+                                  const endIdx = Math.min(startIdx + rowsPerColumn, signs.length);
+                                  const columnSigns = signs.slice(startIdx, endIdx);
+                                  
+                                  result.push(
+                                    <div key={col} className="flex flex-col border border-border rounded-lg overflow-hidden min-w-[600px]">
+                                      {/* Column Header */}
+                                      <div className="grid gap-4 bg-muted px-4 py-3 border-b border-border sticky top-0" style={{ gridTemplateColumns: '80px 120px 1fr 100px' }}>
+                                        <div className="text-xs font-semibold text-foreground">Image</div>
+                                        <div className="text-xs font-semibold text-foreground">Sign</div>
+                                        <div className="text-xs font-semibold text-foreground">Description</div>
+                                        <div className="text-xs font-semibold text-foreground text-center">Quantity</div>
+                                      </div>
+                                      
+                                      {/* Column Rows */}
+                                      {columnSigns.map((item, idx) => {
+                                        const globalIdx = startIdx + idx;
+                                        return (
+                                          <div key={globalIdx} className="grid gap-4 px-4 py-3 border-b border-border hover:bg-muted/30 transition-colors last:border-b-0" style={{ gridTemplateColumns: '80px 120px 1fr 100px' }}>
+                                            {/* Image Thumbnail */}
+                                            <div className="flex items-center justify-center">
+                                              <div className="w-16 h-16 bg-white border border-border rounded flex items-center justify-center overflow-hidden flex-shrink-0">
+                                                {item.image_url ? (
+                                                  <img 
+                                                    src={item.image_url || "/placeholder.svg"} 
+                                                    alt={item.sign_designation}
+                                                    className="w-14 h-14 object-contain"
+                                                    onError={(e) => {
+                                                      e.currentTarget.style.display = 'none';
+                                                    }}
+                                                  />
+                                                ) : (
+                                                  <div className="w-14 h-14 bg-slate-100 rounded flex items-center justify-center">
+                                                    <span className="text-sm text-slate-400">—</span>
+                                                  </div>
+                                                )}
+                                              </div>
+                                            </div>
+                                            
+                                            {/* Sign Designation */}
+                                            <div className="flex items-center">
+                                              <p className="text-sm font-medium text-foreground">{item.sign_designation}</p>
+                                            </div>
+                                            
+                                            {/* Description */}
+                                            <div className="flex items-center">
+                                              <p className="text-sm text-muted-foreground line-clamp-2">{item.description || '-'}</p>
+                                            </div>
+                                            
+                                            {/* Quantity with tight input */}
+                                            <div className="flex items-center justify-center gap-1.5">
+                                              <QuantityInput
+                                                value={item.quantity || 0}
+                                                onChange={async (newQty) => {
+                                                  try {
+                                                    const { error } = await supabase
+                                                      .from('pts_kit_contents')
+                                                      .update({ quantity: newQty })
+                                                      .eq('pts_kit_code', kit.code)
+                                                      .eq('sign_designation', item.sign_designation);
+                                                    
+                                                    if (error) throw error;
+                                                    
+                                                    setPtsKitContents(prev => ({
+                                                      ...prev,
+                                                      [kit.code]: prev[kit.code].map((s, i) => 
+                                                        i === globalIdx ? {...s, quantity: newQty} : s
+                                                      )
+                                                    }));
+                                                  } catch (error) {
+                                                    console.error('[v0] Error updating quantity:', error);
+                                                  }
+                                                }}
+                                              />
+                                              <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-6 w-6 text-destructive hover:text-destructive"
+                                                onClick={async () => {
+                                                  try {
+                                                    const { error } = await supabase
+                                                      .from('pts_kit_contents')
+                                                      .delete()
+                                                      .eq('pts_kit_code', kit.code)
+                                                      .eq('sign_designation', item.sign_designation);
+                                                    
+                                                    if (error) throw error;
+                                                    
+                                                    setPtsKitContents(prev => ({
+                                                      ...prev,
+                                                      [kit.code]: prev[kit.code].filter((_, i) => i !== globalIdx)
+                                                    }));
+                                                  } catch (error) {
+                                                    console.error('[v0] Error deleting sign:', error);
+                                                  }
+                                                }}
+                                              >
+                                                <Trash2 className="w-4 h-4" />
+                                              </Button>
+                                            </div>
+                                          </div>
+                                        );
+                                      })}
                                     </div>
-                                  )}
-                                </div>
-                                {/* Sign Label */}
-                                <p className="text-xs font-semibold text-center text-foreground">{item.sign_designation}</p>
-                                {/* Sign Description */}
-                                {item.description && (
-                                  <p className="text-xs text-center text-muted-foreground line-clamp-2">{item.description}</p>
-                                )}
-                                {/* Quantity Controls */}
-                                <div className="flex items-center justify-center gap-1 w-full">
-                                  <QuantityInput
-                                    value={item.quantity || 0}
-                                    onChange={async (newQty) => {
-                                      try {
-                                        const { error } = await supabase
-                                          .from('pts_kit_contents')
-                                          .update({ quantity: newQty })
-                                          .eq('pts_kit_code', kit.code)
-                                          .eq('sign_designation', item.sign_designation);
-                                        
-                                        if (error) throw error;
-                                        
-                                        // Update local state
-                                        setPtsKitContents(prev => ({
-                                          ...prev,
-                                          [kit.code]: prev[kit.code].map((s, i) => 
-                                            i === idx ? {...s, quantity: newQty} : s
-                                          )
-                                        }));
-                                      } catch (error) {
-                                        console.error('[v0] Error updating quantity:', error);
-                                      }
-                                    }}
-                                  />
-                                </div>
-                                {/* Delete Button */}
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-6 w-6 text-destructive hover:text-destructive"
-                                  onClick={async () => {
-                                    try {
-                                      const { error } = await supabase
-                                        .from('pts_kit_contents')
-                                        .delete()
-                                        .eq('pts_kit_code', kit.code)
-                                        .eq('sign_designation', item.sign_designation);
-                                      
-                                      if (error) throw error;
-                                      
-                                      // Update local state
-                                      setPtsKitContents(prev => ({
-                                        ...prev,
-                                        [kit.code]: prev[kit.code].filter((_, i) => i !== idx)
-                                      }));
-                                    } catch (error) {
-                                      console.error('[v0] Error deleting sign:', error);
-                                    }
-                                  }}
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </Button>
-                              </div>
-                            ))}
+                                  );
+                                }
+                                return result;
+                              })()}
+                            </div>
                           </div>
                         ) : (
-                          <p className="text-xs text-muted-foreground">No signs in this kit yet.</p>
+                          <p className="text-xs text-muted-foreground text-center py-6">No signs added yet</p>
                         )}
                       </div>
                     )}
