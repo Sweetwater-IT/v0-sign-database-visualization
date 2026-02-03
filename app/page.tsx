@@ -225,7 +225,7 @@ export default function SignKitManager() {
       try {
         const { data, error } = await supabase
           .from('pts_kits')
-          .select('id, code, description, finished, blights, has_variants, team_check, page')
+          .select('id, code, description, finished, blights, has_variants, team_check, page, image_url')
           .order('code', { ascending: true });
         
         if (error) throw error;
@@ -1530,19 +1530,23 @@ export default function SignKitManager() {
                           {/* Right Column: Kit Diagram */}
                           <div>
                             <h3 className="text-sm font-semibold text-foreground mb-2">Kit Diagram</h3>
-                            <img
-                              src={kit.image_url}
-                              alt={`PTS Kit ${kit.code} Diagram`}
-                              className="w-full h-auto max-h-[80vh] object-contain border rounded"
-                            />
-                          </div>
-=======
-                            <img
-                              src={kit.image_url}
-                              alt={`PTS Kit ${kit.code} Diagram`}
-                              className="w-full h-auto max-h-[80vh] object-contain border rounded"
->>>>>>> cd5050f (Replace PTS iframe with img tag for PNG diagrams)
-                            />
+                            {kit.image_url ? (
+                              <img
+                                src={kit.image_url}
+                                alt={`PTS Kit ${kit.code} Diagram`}
+                                className="w-full h-auto max-h-[80vh] object-contain border rounded"
+                                loading="lazy"  // Helps with performance on long lists
+                                onError={(e) => {
+                                  // Optional: fallback if image fails (e.g. wrong URL or missing file)
+                                  e.currentTarget.src = "/fallback-placeholder.png"; // or a static asset you have
+                                  e.currentTarget.alt = "Diagram image failed to load";
+                                }}
+                              />
+                            ) : (
+                              <div className="w-full h-[400px] bg-muted/50 flex items-center justify-center rounded border border-dashed">
+                                <p className="text-muted-foreground text-sm">No diagram available for this kit</p>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
