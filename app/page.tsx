@@ -1079,7 +1079,7 @@ export default function SignKitManager() {
                         {/* Signs Table */}
                         {pataKitContents[kit.code] && pataKitContents[kit.code].length > 0 ? (
                           <div className="overflow-x-auto">
-                            <div className="grid auto-cols-max gap-8 min-w-min">
+                            <div className="flex gap-6">
                               {(() => {
                                 const signs = pataKitContents[kit.code];
                                 const rowsPerColumn = 8;
@@ -1092,20 +1092,20 @@ export default function SignKitManager() {
                                   const columnSigns = signs.slice(startIdx, endIdx);
                                   
                                   result.push(
-                                    <div key={col} className="flex flex-col border border-border rounded-lg overflow-hidden">
+                                    <div key={col} className="flex flex-col border border-border rounded-lg overflow-hidden min-w-[600px]">
                                       {/* Column Header */}
-                                      <div className="grid gap-3 bg-muted px-4 py-3 border-b border-border sticky top-0" style={{ gridTemplateColumns: '80px 1.5fr 1.5fr 100px' }}>
+                                      <div className="grid gap-4 bg-muted px-4 py-3 border-b border-border sticky top-0" style={{ gridTemplateColumns: '80px 120px 1fr 100px' }}>
                                         <div className="text-xs font-semibold text-foreground">Image</div>
                                         <div className="text-xs font-semibold text-foreground">Sign</div>
                                         <div className="text-xs font-semibold text-foreground">Description</div>
-                                        <div className="text-xs font-semibold text-foreground text-center">Qty</div>
+                                        <div className="text-xs font-semibold text-foreground text-center">Quantity</div>
                                       </div>
                                       
                                       {/* Column Rows */}
                                       {columnSigns.map((item, idx) => {
                                         const globalIdx = startIdx + idx;
                                         return (
-                                          <div key={globalIdx} className="grid gap-3 px-4 py-3 border-b border-border hover:bg-muted/30 transition-colors last:border-b-0" style={{ gridTemplateColumns: '80px 1.5fr 1.5fr 100px' }}>
+                                          <div key={globalIdx} className="grid gap-4 px-4 py-3 border-b border-border hover:bg-muted/30 transition-colors last:border-b-0" style={{ gridTemplateColumns: '80px 120px 1fr 100px' }}>
                                             {/* Image Thumbnail */}
                                             <div className="flex items-center justify-center">
                                               <div className="w-16 h-16 bg-white border border-border rounded flex items-center justify-center overflow-hidden flex-shrink-0">
@@ -1386,7 +1386,7 @@ export default function SignKitManager() {
                         {/* Signs Table */}
                         {ptsKitContents[kit.code] && ptsKitContents[kit.code].length > 0 ? (
                           <div className="overflow-x-auto">
-                            <div className="grid auto-cols-max gap-8 min-w-min">
+                            <div className="flex gap-6">
                               {(() => {
                                 const signs = ptsKitContents[kit.code];
                                 const rowsPerColumn = 8;
@@ -1399,20 +1399,20 @@ export default function SignKitManager() {
                                   const columnSigns = signs.slice(startIdx, endIdx);
                                   
                                   result.push(
-                                    <div key={col} className="flex flex-col border border-border rounded-lg overflow-hidden">
+                                    <div key={col} className="flex flex-col border border-border rounded-lg overflow-hidden min-w-[600px]">
                                       {/* Column Header */}
-                                      <div className="grid gap-3 bg-muted px-4 py-3 border-b border-border sticky top-0" style={{ gridTemplateColumns: '80px 1.5fr 1.5fr 100px' }}>
+                                      <div className="grid gap-4 bg-muted px-4 py-3 border-b border-border sticky top-0" style={{ gridTemplateColumns: '80px 120px 1fr 100px' }}>
                                         <div className="text-xs font-semibold text-foreground">Image</div>
                                         <div className="text-xs font-semibold text-foreground">Sign</div>
                                         <div className="text-xs font-semibold text-foreground">Description</div>
-                                        <div className="text-xs font-semibold text-foreground text-center">Qty</div>
+                                        <div className="text-xs font-semibold text-foreground text-center">Quantity</div>
                                       </div>
                                       
                                       {/* Column Rows */}
                                       {columnSigns.map((item, idx) => {
                                         const globalIdx = startIdx + idx;
                                         return (
-                                          <div key={globalIdx} className="grid gap-3 px-4 py-3 border-b border-border hover:bg-muted/30 transition-colors last:border-b-0" style={{ gridTemplateColumns: '80px 1.5fr 1.5fr 100px' }}>
+                                          <div key={globalIdx} className="grid gap-4 px-4 py-3 border-b border-border hover:bg-muted/30 transition-colors last:border-b-0" style={{ gridTemplateColumns: '80px 120px 1fr 100px' }}>
                                             {/* Image Thumbnail */}
                                             <div className="flex items-center justify-center">
                                               <div className="w-16 h-16 bg-white border border-border rounded flex items-center justify-center overflow-hidden flex-shrink-0">
