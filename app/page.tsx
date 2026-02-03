@@ -76,7 +76,7 @@ export default function SignKitManager() {
   const [loading, setLoading] = useState(true);
   const [seeding, setSeeding] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [ptsKitOptions, setPtsKitOptions] = useState<Array<{ id: string; code: string; description?: string }>>([]);
+  const [ptsKitOptions, setPtsKitOptions] = useState<Array<{ id: string; code: string; description?: string; image_url?: string }>>([]);
   const [selectedPtsKit, setSelectedPtsKit] = useState<string | null>(null);
   const [expandedPtsKit, setExpandedPtsKit] = useState<string | null>(null);
   const [pataKitOptions, setPataKitOptions] = useState<Array<{ id: string; code: string; description?: string }>>([]);
@@ -225,7 +225,7 @@ export default function SignKitManager() {
       try {
         const { data, error } = await supabase
           .from('pts_kits')
-          .select('id, code, description, finished, blights, has_variants, team_check, page')
+          .select('id, code, description, finished, blights, has_variants, team_check, page, image_url')
           .order('code', { ascending: true });
         
         if (error) throw error;
@@ -1531,7 +1531,7 @@ export default function SignKitManager() {
                           <div>
                             <h3 className="text-sm font-semibold text-foreground mb-2">Kit Diagram</h3>
                             <iframe
-                              src={kit.page ? `https://raw.githubusercontent.com/Sweetwater-IT/v0-sign-database-visualization/main/public/pts-diagrams/${kit.page}.pdf` : '/placeholder.pdf'}
+                              src={kit.image_url || '/placeholder.pdf'}
                               className="w-full h-[600px] border rounded"
                               title={`PTS Kit ${kit.code} Diagram`}
                             />
