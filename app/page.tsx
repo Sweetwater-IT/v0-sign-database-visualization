@@ -1531,7 +1531,7 @@ export default function SignKitManager() {
                           <div>
                             <h3 className="text-sm font-semibold text-foreground mb-2">Kit Diagram</h3>
                             <iframe
-                              src={`/pts-diagrams/${kit.page}.pdf`}
+                              src={kit.image_url}
                               className="w-full h-[600px] border rounded"
                               title={`PTS Kit ${kit.code} Diagram`}
                             />
