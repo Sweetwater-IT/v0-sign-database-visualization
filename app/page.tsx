@@ -165,9 +165,13 @@ export default function SignKitManager() {
 
   // Fetch signs from Supabase
   useEffect(() => {
+    let isMounted = true;
+    let retryCount = 0;
+    const maxRetries = 3;
+
     const fetchSigns = async () => {
       try {
-        console.log('[v0] Fetching signs from Supabase...');
+        console.log('[v0] Fetching signs from Supabase (attempt', retryCount + 1, ')...');
         const { data, error } = await supabase
           .from('signs')
           .select('*')
@@ -175,10 +179,22 @@ export default function SignKitManager() {
           .range(0, 999);
 
         if (error) {
-          console.error('[v0] Supabase error:', error);
+          console.error('[v0] Supabase error details:', error.message, error.code, error.status);
+          
+          // Retry logic for transient errors
+          if (retryCount < maxRetries && error.status !== 401 && error.status !== 403) {
+            retryCount++;
+            setTimeout(() => {
+              if (isMounted) fetchSigns();
+            }, 1000 * retryCount);
+            return;
+          }
+          
           throw error;
         }
 
+        if (!isMounted) return;
+        
         console.log('[v0] Fetched signs:', data?.length || 0);
         setSigns(data || []);
         const uniqueCategories = Array.from(
@@ -186,13 +202,21 @@ export default function SignKitManager() {
         ).sort();
         setCategories(uniqueCategories as string[]);
         setLoading(false);
-      } catch (error) {
-        console.error('[v0] Error fetching signs:', error);
+      } catch (error: any) {
+        if (!isMounted) return;
+        console.error('[v0] Error fetching signs:', error?.message || error);
+        // Set empty signs array to prevent blocking UI
+        setSigns([]);
+        setCategories([]);
         setLoading(false);
       }
     };
 
     fetchSigns();
+    
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // Fetch PTS kit options
