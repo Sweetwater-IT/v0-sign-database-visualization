@@ -1006,7 +1006,7 @@ export default function SignKitManager() {
                     {expandedPataKit === kit.code && (!hasVariants || selectedPataVariant[kit.code]) && (
                       <div className="bg-muted/5 px-4 py-4 border-t border-border space-y-4">
                         {/* Blights Section - Always at Top */}
-                        <div className="flex items-center gap-4 pb-4 border-b border-border">
+                        <div className="flex items-center gap-4 pb-4">
                           <label className="text-sm font-semibold text-foreground min-w-fit">Blights:</label>
                           <div className="w-40">
                             <QuantityInput
@@ -1313,7 +1313,7 @@ export default function SignKitManager() {
                     {expandedPtsKit === kit.code && (!kit.has_variants || selectedPtsVariant[kit.code]) && (
                       <div className="bg-muted/5 px-4 py-4 border-t border-border space-y-4">
                         {/* Blights Section - Always at Top */}
-                        <div className="flex items-center gap-4 pb-4 border-b border-border">
+                        <div className="flex items-center gap-4 pb-4">
                           <label className="text-sm font-semibold text-foreground min-w-fit">Blights:</label>
                           <div className="w-40">
                             <QuantityInput
