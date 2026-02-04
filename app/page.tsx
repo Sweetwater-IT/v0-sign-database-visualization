@@ -810,7 +810,7 @@ export default function SignKitManager() {
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabValue)} className="w-full">
           <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-3 gap-1 bg-slate-100 p-1 rounded-lg mb-6">
             <TabsTrigger value="catalog" className="rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm">
-              Sign Catalogue
+              Sign Library
               <Badge variant="secondary" className="ml-2 bg-slate-200 text-slate-700">
                 {signs.length}
               </Badge>
