@@ -85,6 +85,8 @@ export default function SignKitManager() {
   const [pataKitContents, setPataKitContents] = useState<Record<string, Array<{ sign_designation: string; quantity: number; image_url?: string }>>>({});
   const [pataKitFinished, setPataKitFinished] = useState<Record<string, boolean>>({});
   const [ptsKitFinished, setPtsKitFinished] = useState<Record<string, boolean>>({});
+  const [pataKitReviewed, setPataKitReviewed] = useState<Record<string, boolean>>({});
+  const [ptsKitReviewed, setPtsKitReviewed] = useState<Record<string, boolean>>({});
   const [selectedPataVariant, setSelectedPataVariant] = useState<Record<string, 'A' | 'B' | null>>({});
   const [selectedPtsVariant, setSelectedPtsVariant] = useState<Record<string, 'A' | 'B' | null>>({});
   const [pataKitVariants, setPataKitVariants] = useState<Record<string, Array<any>>>({});
@@ -225,20 +227,26 @@ export default function SignKitManager() {
       try {
         const { data, error } = await supabase
           .from('pts_kits')
-          .select('id, code, description, finished, blights, has_variants, team_check, page, image_url')
+          .select('id, code, description, finished, blights, has_variants, team_check, page, image_url, reviewed')
           .order('code', { ascending: true });
         
         if (error) throw error;
         console.log('[v0] Fetched PTS kits:', data?.length);
         setPtsKitOptions(data || []);
         
-        // Populate finished state
+        // Populate finished and reviewed states
         if (data) {
           const finishedMap = data.reduce((acc, kit) => {
             acc[kit.code] = kit.finished || false;
             return acc;
           }, {} as Record<string, boolean>);
           setPtsKitFinished(finishedMap);
+
+          const reviewedMap = data.reduce((acc, kit) => {
+            acc[kit.code] = kit.reviewed || false;
+            return acc;
+          }, {} as Record<string, boolean>);
+          setPtsKitReviewed(reviewedMap);
         }
       } catch (error) {
         console.error('[v0] Error fetching PTS kits:', error);
@@ -283,7 +291,7 @@ export default function SignKitManager() {
       try {
         const { data, error } = await supabase
           .from('pata_kits')
-          .select('id, code, description, finished, blights, has_variants, team_check, image_url')
+          .select('id, code, description, finished, blights, has_variants, team_check, image_url, reviewed')
           .order('code', { ascending: true });
         
         if (error) throw error;
@@ -292,13 +300,19 @@ export default function SignKitManager() {
         console.log('[v0] PATA kits that should have variants:', variantKits?.map(k => ({code: k.code, has_variants: k.has_variants})));
         setPataKitOptions(data || []);
         
-        // Populate finished state
+        // Populate finished and reviewed states
         if (data) {
           const finishedMap = data.reduce((acc, kit) => {
             acc[kit.code] = kit.finished || false;
             return acc;
           }, {} as Record<string, boolean>);
           setPataKitFinished(finishedMap);
+
+          const reviewedMap = data.reduce((acc, kit) => {
+            acc[kit.code] = kit.reviewed || false;
+            return acc;
+          }, {} as Record<string, boolean>);
+          setPataKitReviewed(reviewedMap);
         }
       } catch (error) {
         console.error('[v0] Error fetching PATA kits:', error);
@@ -960,21 +974,27 @@ export default function SignKitManager() {
                         )}
                       </div>
                       <div className="col-span-1 flex items-center justify-center">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleTeamCheck('PATA', kit.code);
-                          }}
-                        >
-                          {kit.team_check ? (
-                            <div className="w-5 h-5 bg-red-600 rounded" />
-                          ) : (
-                            <div className="w-5 h-5 border-2 border-red-600 rounded" />
-                          )}
-                        </Button>
+                        {pataKitReviewed[kit.code] ? (
+                          <Badge className="bg-red-100 text-red-900 border-red-200 text-xs px-2 py-0.5">
+                            reviewed
+                          </Badge>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleTeamCheck('PATA', kit.code);
+                            }}
+                          >
+                            {kit.team_check ? (
+                              <div className="w-5 h-5 bg-red-600 rounded" />
+                            ) : (
+                              <div className="w-5 h-5 border-2 border-red-600 rounded" />
+                            )}
+                          </Button>
+                        )}
                       </div>
                     </div>
 
@@ -1064,6 +1084,32 @@ export default function SignKitManager() {
                                   >
                                     <CheckCircle2 className="w-3 h-3" />
                                     Mark as Finished
+                                  </Button>
+                                )}
+                                {!pataKitReviewed[kit.code] && (
+                                  <Button
+                                    size="sm"
+                                    onClick={async () => {
+                                      try {
+                                        const { error } = await supabase
+                                          .from('pata_kits')
+                                          .update({ reviewed: true })
+                                          .eq('code', kit.code);
+
+                                        if (error) throw error;
+
+                                        setPataKitReviewed(prev => ({
+                                          ...prev,
+                                          [kit.code]: true
+                                        }));
+                                      } catch (error) {
+                                        console.error('[v0] Error marking kit as reviewed:', error);
+                                      }
+                                    }}
+                                    variant="outline"
+                                    className="gap-1"
+                                  >
+                                    Mark as Reviewed
                                   </Button>
                                 )}
                                 <Button
@@ -1294,21 +1340,27 @@ export default function SignKitManager() {
                         )}
                       </div>
                       <div className="col-span-1 flex items-center justify-center">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleTeamCheck('PTS', kit.code);
-                          }}
-                        >
-                          {kit.team_check ? (
-                            <div className="w-5 h-5 bg-red-600 rounded" />
-                          ) : (
-                            <div className="w-5 h-5 border-2 border-red-600 rounded" />
-                          )}
-                        </Button>
+                        {ptsKitReviewed[kit.code] ? (
+                          <Badge className="bg-red-100 text-red-900 border-red-200 text-xs px-2 py-0.5">
+                            reviewed
+                          </Badge>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleTeamCheck('PTS', kit.code);
+                            }}
+                          >
+                            {kit.team_check ? (
+                              <div className="w-5 h-5 bg-red-600 rounded" />
+                            ) : (
+                              <div className="w-5 h-5 border-2 border-red-600 rounded" />
+                            )}
+                          </Button>
+                        )}
                       </div>
                     </div>
 
@@ -1397,6 +1449,32 @@ export default function SignKitManager() {
                                   >
                                     <CheckCircle2 className="w-3 h-3" />
                                     Mark as Finished
+                                  </Button>
+                                )}
+                                {!ptsKitReviewed[kit.code] && (
+                                  <Button
+                                    size="sm"
+                                    onClick={async () => {
+                                      try {
+                                        const { error } = await supabase
+                                          .from('pts_kits')
+                                          .update({ reviewed: true })
+                                          .eq('code', kit.code);
+
+                                        if (error) throw error;
+
+                                        setPtsKitReviewed(prev => ({
+                                          ...prev,
+                                          [kit.code]: true
+                                        }));
+                                      } catch (error) {
+                                        console.error('[v0] Error marking kit as reviewed:', error);
+                                      }
+                                    }}
+                                    variant="outline"
+                                    className="gap-1"
+                                  >
+                                    Mark as Reviewed
                                   </Button>
                                 )}
                                 <Button
