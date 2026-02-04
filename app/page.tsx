@@ -283,7 +283,7 @@ export default function SignKitManager() {
       try {
         const { data, error } = await supabase
           .from('pata_kits')
-          .select('id, code, description, finished, blights, has_variants, team_check')
+          .select('id, code, description, finished, blights, has_variants, team_check, image_url')
           .order('code', { ascending: true });
         
         if (error) throw error;
@@ -1208,11 +1208,22 @@ export default function SignKitManager() {
                           {/* Right Column: Kit Diagram */}
                           <div>
                             <h3 className="text-sm font-semibold text-foreground mb-2">Kit Diagram</h3>
-                            <iframe
-                              src={`/pata-diagrams/${kit.code}.pdf`}
-                              className="w-full h-[600px] border rounded"
-                              title={`PATA Kit ${kit.code} Diagram`}
-                            />
+                            {kit.image_url ? (
+                              <img
+                                src={kit.image_url}
+                                alt={`PATA Kit ${kit.code} Diagram`}
+                                className="w-full h-auto max-h-[80vh] object-contain border rounded"
+                                loading="lazy"
+                                onError={(e) => {
+                                  e.currentTarget.src = "/fallback-placeholder.png"; // optional fallback
+                                  e.currentTarget.alt = "Diagram failed to load";
+                                }}
+                              />
+                            ) : (
+                              <div className="w-full h-[400px] bg-muted/50 flex items-center justify-center rounded border border-dashed">
+                                <p className="text-muted-foreground text-sm">No diagram available</p>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
