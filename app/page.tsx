@@ -710,6 +710,7 @@ export default function SignKitManager() {
                 setSelectedSignForKit(sign);
                 setShowAddPtsDialog(true);
               }}
+              showActions={false}
             />
           ))}
         </div>
