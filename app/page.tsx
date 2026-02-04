@@ -788,8 +788,8 @@ export default function SignKitManager() {
         <div className="container mx-auto px-4 py-6">
           <div className="mb-6 flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">ETC Sign Kit Manager</h1>
-              <p className="text-sm text-muted-foreground">Full sign list, PTS kits, and PATA kits</p>
+              <h1 className="text-3xl font-bold text-foreground mb-2">ETC Sign Library</h1>
+              <p className="text-sm text-muted-foreground">MUTCD sign library, PTS kits, and PATA kits</p>
             </div>
             {signs.length < 700 && (
               <Button 
